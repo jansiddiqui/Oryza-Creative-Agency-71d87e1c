@@ -19,17 +19,19 @@ The slot page shows:
 - where the image appears (with a link to the page),
 - the sizes it will be made in (desktop 16:9, phones 4:5, share image 1200×630, cards 4:3),
 - the minimum upload size,
-- the ready-made **prompt** and **negative prompt**.
+- a complete, ready-made **prompt** and an **alternative scene**.
 
 ### 2. Generate the image (illustrative slots)
-1. Tap **Copy prompt**. Paste it into ChatGPT or Claude.
-2. Ask for a **landscape 3:2** image, **1536×1024 or larger**.
-3. If the tool has a field for things to avoid, tap **Copy negative prompt** and paste it there.
-4. Generate a few and **pick the most natural one**: real light, believable people from behind or at a distance, no
-   text, nothing that looks like a specific client or our team.
-5. Download the original (PNG or JPG).
+1. Tap **Copy prompt**. Paste it into ChatGPT, Gemini or Midjourney — as it is. The prompt already contains the
+   format and size (landscape 3:2, 1536×1024), the scene, people, composition, camera, light, the brand colour grade and
+   everything to avoid. Nothing needs to be added or changed.
+2. Generate **3–4 versions** and **pick the most natural one**: real light, believable people seen from behind or at a
+   distance, no text, nothing that looks like a specific client or our team.
+3. Not happy with any of them? Tap **Copy alternative scene** for the same idea in a different setting, and try again.
+4. Download the original (PNG or JPG).
 
 For a **real-only** slot there is no prompt. Take or choose a real photo instead (landscape, at least the size shown).
+Share images (1200×630) are made automatically from their page header; they need no prompt.
 
 ### 3. Upload
 1. Under **Upload**, choose **Real photo** or **AI illustrative**. On real-only slots only "Real photo" is possible.
