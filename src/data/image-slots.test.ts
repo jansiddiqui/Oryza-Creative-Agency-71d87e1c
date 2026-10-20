@@ -1,10 +1,9 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { categories } from "./categories";
 import { imageSlots, slotById } from "./image-slots";
 import { buildPrompt, NEGATIVE_PROMPT, promptsMarkdown, REVIEW_CHECKLIST, requiredSource, sourceSize, STYLE_GUIDE } from "@/lib/image-prompts";
-import { approvedEntry, manifest, ogImageUrl, pickVariant, type ImageManifest } from "@/lib/image-manifest";
 
 describe("image slot registry", () => {
   it("has unique ids", () => {
@@ -62,55 +61,12 @@ describe("prompt generator", () => {
   it("documents negatives and the human review checklist", () => {
     const md = promptsMarkdown(imageSlots);
     for (const n of NEGATIVE_PROMPT) expect(md).toContain(n);
-    for (const c of REVIEW_CHECKLIST) expect(md).toContain(c);
+    for (const c of REVIEW_CHECKLIST) expect(md).toContain(c.label);
     for (const s of imageSlots) expect(md).toContain(`\`${s.id}\``);
   });
 
   it("docs/image-prompts.md is up to date (run npm run images:prompts)", () => {
     const file = readFileSync(join(process.cwd(), "docs", "image-prompts.md"), "utf8").replace(/\r\n/g, "\n");
     expect(file).toBe(promptsMarkdown(imageSlots));
-  });
-});
-
-describe("image manifest", () => {
-  it("only references known slots, files that exist, and real photos in real-only slots", () => {
-    for (const [id, e] of Object.entries(manifest.slots)) {
-      const slot = slotById[id];
-      expect(slot, id).toBeDefined();
-      if (slot.type === "real-only") expect(e.source, id).toBe("real");
-      for (const a of Object.values(e.aspects)) {
-        for (const v of a!.variants) {
-          expect(existsSync(join(process.cwd(), "public", v.webp)), v.webp).toBe(true);
-          expect(existsSync(join(process.cwd(), "public", v.avif)), v.avif).toBe(true);
-        }
-      }
-    }
-  });
-
-  it("shows an image only after a person approved it", () => {
-    const m: ImageManifest = {
-      version: 1,
-      slots: {
-        a: { source: "ai-illustrative", original: { file: "a.png", width: 1, height: 1, sha256: "" }, focal: { x: 0.5, y: 0.5 }, aspects: {}, approved_by: null, approved_at: null, updated_at: "" },
-        b: {
-          source: "ai-illustrative",
-          original: { file: "b.png", width: 1, height: 1, sha256: "" },
-          focal: { x: 0.5, y: 0.5 },
-          aspects: { og: { width: 1536, height: 806, blurDataURL: "", variants: [{ w: 1200, h: 630, avif: "/images/b/og-1200.avif", webp: "/images/b/og-1200.webp" }] } },
-          approved_by: "Reviewer",
-          approved_at: "2026-10-20T00:00:00Z",
-          updated_at: "",
-        },
-      },
-    };
-    expect(approvedEntry("a", m)).toBeNull();
-    expect(approvedEntry("b", m)).not.toBeNull();
-    expect(ogImageUrl("b", m)).toBe("/images/b/og-1200.webp");
-  });
-
-  it("picks the smallest variant that is wide enough", () => {
-    const v = [640, 960, 1280].map((w) => ({ w, h: w, avif: `${w}.avif`, webp: `${w}.webp` }));
-    expect(pickVariant(v, 700).w).toBe(960);
-    expect(pickVariant(v, 3000).w).toBe(1280);
   });
 });

@@ -1,24 +1,26 @@
 import { getImageProps, type ImageLoader } from "next/image";
 import { slotById, type ImageSlot } from "@/data/image-slots";
-import { approvedEntry, pickVariant, type ManifestAspect, type ManifestEntry } from "@/lib/image-manifest";
+import { getLiveImage, pickVariant } from "@/lib/images/live";
+import type { LiveImage, ProcessedAspect } from "@/lib/images/types";
+import { publicImageUrl } from "@/lib/supabase/config";
 import { BrandFallback } from "./BrandFallback";
 import { frameClass, slotAspects } from "./frame";
 
 // next/image hands each requested width to this loader; we answer with the nearest pre-built file.
 const loaderFor =
-  (aspect: ManifestAspect, format: "avif" | "webp"): ImageLoader =>
+  (aspect: ProcessedAspect, format: "avif" | "webp"): ImageLoader =>
   ({ width }) =>
-    pickVariant(aspect.variants, width)[format];
+    publicImageUrl(pickVariant(aspect.variants, width)[format]);
 
-function srcSets(aspect: ManifestAspect, alt: string, sizes: string, priority: boolean) {
+function srcSets(aspect: ProcessedAspect, alt: string, sizes: string, priority: boolean) {
   const largest = aspect.variants[aspect.variants.length - 1];
-  const common = { alt, sizes, width: largest.w, height: largest.h, priority, src: largest.webp };
+  const common = { alt, sizes, width: largest.w, height: largest.h, priority, src: publicImageUrl(largest.webp) };
   const avif = getImageProps({ ...common, loader: loaderFor(aspect, "avif") }).props;
   const webp = getImageProps({ ...common, loader: loaderFor(aspect, "webp") }).props;
   return { avif, webp };
 }
 
-/** Renders an approved manifest entry as an art-directed <picture> (AVIF + WebP, portrait crop on phones). */
+/** Renders a live image as an art-directed <picture> (AVIF + WebP, portrait crop on phones). */
 export function SlotPicture({
   slot,
   entry,
@@ -27,7 +29,7 @@ export function SlotPicture({
   className = "",
 }: {
   slot: ImageSlot;
-  entry: ManifestEntry;
+  entry: LiveImage;
   sizes: string;
   priority?: boolean;
   className?: string;
@@ -60,11 +62,12 @@ export function SlotPicture({
 }
 
 /**
- * The one way pages show photos. Looks the slot up in the registry and the approved manifest entry:
- * - approved image → responsive <picture>, lazy unless `priority` (heroes only), blur placeholder;
- * - no image yet → the brand fallback (if the slot allows it) or nothing — never a broken image or stock photo.
+ * The one way pages show photos. Looks the slot up in the registry and its live image in Supabase:
+ * - live image → responsive <picture>, lazy unless `priority` (heroes only), blur placeholder;
+ * - no image (or Supabase unreachable) → the brand fallback if the slot allows it, else nothing.
+ *   Never a broken image or a stock photo.
  */
-export function SlotImage({
+export async function SlotImage({
   slot: slotId,
   sizes = "100vw",
   priority = false,
@@ -77,18 +80,13 @@ export function SlotImage({
 }) {
   const slot = slotById[slotId];
   if (!slot) throw new Error(`Unknown image slot "${slotId}" — add it to src/data/image-slots.ts`);
-  const entry = approvedEntry(slotId);
+  const entry = await getLiveImage(slotId);
   if (entry) return <SlotPicture slot={slot} entry={entry} sizes={sizes} priority={priority} className={className} />;
   if (!slot.fallback) return null;
   return <BrandFallback slot={slot} className={className} />;
 }
 
-/** True when the slot has an approved image, for layouts that only reserve space when there is one. */
-export function hasSlotImage(slotId: string): boolean {
-  return approvedEntry(slotId) !== null;
-}
-
-/** Header media for a slot, or undefined so the header stays single-column until an image is approved. */
-export function slotMedia(slotId: string, sizes = "(min-width: 1024px) 40vw, 100vw") {
-  return hasSlotImage(slotId) ? <SlotImage slot={slotId} sizes={sizes} priority /> : undefined;
+/** Header media for a slot, or undefined so the header stays single-column until an image is live. */
+export async function slotMedia(slotId: string, sizes = "(min-width: 1024px) 40vw, 100vw") {
+  return (await getLiveImage(slotId)) ? <SlotImage slot={slotId} sizes={sizes} priority /> : undefined;
 }

@@ -43,6 +43,3 @@ next-env.d.ts
 
 # local review screenshots
 /review/
-# image pipeline inbox (originals before processing)
-/image-inbox/*
-!/image-inbox/README.md

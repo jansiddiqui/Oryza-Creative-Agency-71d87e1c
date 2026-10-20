@@ -25,7 +25,7 @@ npm run build && npm start   # production
 | `src/data/calendar-india.ts` | National days, yearly festivals (update every year), month themes |
 | `src/lib/engine/school-engine.ts` | Deterministic engine: tags → rules → slots → pinned dates → scoring → calendar |
 | `src/components/planner/` | Plan builder questionnaire and plan view |
-| `src/app/api/lead/route.ts` | Lead intake: email to contact@oryzaonline.in via Resend (database in Phase 3) |
+| `src/app/api/lead/route.ts` | Lead intake: saved in Supabase first, then emailed to contact@oryzaonline.in via Resend |
 | `src/lib/site.ts` | Business details. Real values are defaults, unknowns are TODO |
 | `src/data/redirects.ts` | 301s from every old-site URL (tested in `redirects.test.ts`) |
 | `src/components/Analytics.tsx` | GA4 + Microsoft Clarity, loaded only when their env IDs are set |
@@ -33,20 +33,19 @@ npm run build && npm start   # production
 | `src/components/infographics/` | Fit matrix, process flow, 30-day timeline, pillar mix, package comparison — all drawn from real site data |
 | `src/components/motion/` | Scroll reveals (armed below the fold only), sticky-header state; all motion is CSS and off for reduced motion |
 | `src/data/image-slots.ts` | Every image position: page, subject, crops, alt text, `illustrative` vs `real-only` |
-| `src/data/image-manifest.json` | Processed images per slot: files, focal point, source, `approved_by` / `approved_at` |
-| `src/components/images/SlotImage.tsx` | `<SlotImage slot="…" />`: art-directed AVIF/WebP `<picture>`, or the brand fallback |
+| `src/components/images/SlotImage.tsx` | `<SlotImage slot="…" />`: live image from Supabase as AVIF/WebP `<picture>`, or the brand fallback |
+| `src/app/admin/`, `src/components/admin/`, `src/lib/admin/` | Admin panel (`/admin`): sign-in, Images, Leads, Users, Activity |
+| `src/lib/images/` | Image Manager: validation, sharp processing, approve/rollback service, live-image reader |
+| `supabase/migrations/` | Database schema, Row Level Security, storage buckets (tested in `supabase/migrations.test.ts`) |
+| `docs/supabase-setup.md`, `docs/admin-images.md` | One-time Supabase setup; how to add an image |
 | `docs/image-prompts.md` | Generated prompts, negatives and review checklist for every slot |
 | `docs/old-site-audit.md` | Audit of the retired static site |
 | `docs/deploy.md` | Env vars, Resend DNS, go-live, post-launch checks, rollback |
 
 ## Images
-AI-generated images are allowed **only** in `illustrative` slots, as decorative scenes. `real-only` slots (work, team,
-clients, results, office) take real photos or nothing.
-```bash
-npm run images:prompts                       # writes docs/image-prompts.md
-# generate + review each image, save as image-inbox/<slot-id>.png
-npm run images:process -- --by "Your name"   # validate, crop, AVIF+WebP, manifest (approval)
-```
+Managed in the browser at `/admin/images` — see `docs/admin-images.md`. AI-generated images are allowed **only** in
+`illustrative` slots, as decorative scenes; `real-only` slots (work, team, clients, results, office) take real photos
+or nothing. `npm run images:prompts` regenerates `docs/image-prompts.md` (all prompts in one file).
 
 ## Adding a new category playbook
 1. Copy `src/data/playbooks/school.ts` and write the audiences, pillars, rules and 60+ templates.
@@ -63,5 +62,6 @@ See `docs/deploy.md`. Open items:
 
 ## Roadmap
 - **Phase 2:** shared engine core + playbooks for hospitals/clinics and doctors, real estate, political leaders, restaurants, coaching
-- **Phase 3:** PostgreSQL (Supabase) + Payload CMS: saved plans and leads, editable playbooks, blog
+- **Phase 3A (done):** Supabase + admin foundation: sign-in, Image Manager, leads in the database
+- **Phase 3:** editable playbooks, blog
 - **Phase 4:** Admin panel — client workspaces, plan-to-task conversion, master calendar, Today view, content stages, team workload, shoot planner, client approvals

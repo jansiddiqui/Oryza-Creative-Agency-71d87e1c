@@ -130,7 +130,7 @@ export function PlanBuilder() {
           <p className="mt-2 mb-6 text-muted">
             Our instant planner is live for schools first. For {c ? c.name.toLowerCase() : "your business"}, a strategist builds the same detailed plan with you — share your details below.
           </p>
-          <LeadForm defaultCategory={c?.name ?? ""} context={c ? `Plan builder request: ${c.name}` : "Plan builder request"} waHref={whatsappLink(`Hi Oryza, I'd like a social media plan for my ${c?.name ?? "business"}.`)} />
+          <LeadForm source="plan-builder" defaultCategory={c?.name ?? ""} context={c ? `Plan builder request: ${c.name}` : "Plan builder request"} waHref={whatsappLink(`Hi Oryza, I'd like a social media plan for my ${c?.name ?? "business"}.`)} />
         </div>
       </div>
     );
@@ -149,6 +149,7 @@ export function PlanBuilder() {
           setLead(await sendLead({
             name: String(fd.get("name")), phone: String(fd.get("phone")), business: a.name, city: a.city,
             category: "Schools", message: "Unlocked the full plan on the website.", plan: planSummary(plan), website: String(fd.get("website") ?? ""),
+            source: "plan-builder", answers: JSON.stringify({ category: "schools", ...a }),
           }));
         }}
       >

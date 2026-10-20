@@ -45,13 +45,24 @@ export function LeadStatus({ status, waHref }: { status: LeadResult; waHref?: st
   return null;
 }
 
-export function LeadForm({ defaultCategory = "", context = "", waHref }: { defaultCategory?: string; context?: string; waHref?: string | null }) {
+export function LeadForm({
+  defaultCategory = "",
+  context = "",
+  waHref,
+  source = "contact",
+}: {
+  defaultCategory?: string;
+  context?: string;
+  waHref?: string | null;
+  source?: "contact" | "plan-builder";
+}) {
   const [status, setStatus] = useState<LeadResult>("idle");
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
     if (context) payload.message = `${context}\n\n${payload.message ?? ""}`;
+    payload.source = source;
     setStatus("sending");
     setStatus(await sendLead(payload));
   }
