@@ -5,9 +5,8 @@
  * - `real-only` slots show work, team, clients, results or "our office": a REAL photo or nothing.
  *   No AI prompt is ever generated for them and the processing script refuses them without a real-photo sidecar.
  *
- * Files are produced by `npm run images:process` into /public/images/<slot-id>/ and recorded in
- * src/data/image-manifest.json. The Phase 4 admin panel will write the same manifest shape (per slot: files,
- * focal point, source, approved_by, approved_at), so slots can be replaced without code changes.
+ * Slots are part of the design, so they live in code. Their images are managed in /admin/images and stored in
+ * Supabase (table `slot_images`, buckets `image-originals` and `site-images`): upload → review → approve.
  */
 import { categories } from "./categories";
 

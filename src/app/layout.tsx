@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { fraunces, frauncesItalic, manrope } from "./fonts";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Analytics } from "@/components/Analytics";
-import { RevealObserver } from "@/components/motion/RevealObserver";
-import { JsonLd, organizationSchema } from "@/components/JsonLd";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -35,24 +30,12 @@ export const viewport: Viewport = {
   themeColor: "#13201c",
 };
 
+/** Root: document, fonts and global styles only. Public chrome lives in (site)/layout, admin chrome in admin/. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN" className={`${fraunces.variable} ${frauncesItalic.variable} ${manrope.variable}`}>
       <body className="min-h-dvh flex flex-col">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
-        >
-          Skip to content
-        </a>
-        <Header />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <JsonLd data={organizationSchema()} />
-        <Analytics />
-        <RevealObserver />
+        {children}
       </body>
     </html>
   );

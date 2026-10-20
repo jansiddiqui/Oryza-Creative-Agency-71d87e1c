@@ -30,10 +30,3 @@ export function outputWidths(cropWidth: number, widths: number[]): number[] {
   const fit = widths.filter((w) => w <= cropWidth);
   return fit.length ? fit : [cropWidth];
 }
-
-/** Parses an inbox file name: `<slot-id>.png` or `<slot-id>@4x5.jpg`. */
-export function parseInboxName(file: string): { slotId: string; aspect?: string; ext: string } | null {
-  const m = /^([a-z0-9-]+)(?:@([a-z0-9]+))?\.(png|jpe?g|webp)$/i.exec(file);
-  if (!m) return null;
-  return { slotId: m[1].toLowerCase(), aspect: m[2]?.toLowerCase(), ext: m[3].toLowerCase() };
-}

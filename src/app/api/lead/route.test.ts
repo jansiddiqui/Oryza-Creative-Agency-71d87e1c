@@ -1,4 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const db = vi.hoisted(() => ({ configured: false, saveLead: vi.fn(), markLeadEmail: vi.fn() }));
+vi.mock("@/lib/supabase/admin", () => ({ serviceConfigured: () => db.configured }));
+vi.mock("@/lib/leads", () => ({ saveLead: db.saveLead, markLeadEmail: db.markLeadEmail }));
+
 import { POST } from "./route";
 
 const post = (body: unknown) =>
@@ -16,6 +21,9 @@ describe("POST /api/lead", () => {
     vi.stubEnv("LEAD_TO_EMAIL", "");
     vi.stubEnv("LEAD_FROM_EMAIL", "");
     fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 200 }));
+    db.configured = false;
+    db.saveLead.mockReset().mockResolvedValue("lead-1");
+    db.markLeadEmail.mockReset().mockResolvedValue(undefined);
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -75,5 +83,54 @@ describe("POST /api/lead", () => {
   it("rejects invalid JSON", async () => {
     const res = await POST(new Request("http://localhost/api/lead", { method: "POST", body: "{" }));
     expect(res.status).toBe(400);
+  });
+
+  describe("with the database", () => {
+    beforeEach(() => {
+      db.configured = true;
+    });
+
+    it("saves the lead FIRST, with plan answers and summary, then emails and records it", async () => {
+      const order: string[] = [];
+      db.saveLead.mockImplementation(async () => (order.push("save"), "lead-1"));
+      fetchMock.mockImplementation(async () => (order.push("email"), new Response("{}", { status: 200 })));
+      const answers = JSON.stringify({ board: "cbse", goals: ["admissions"] });
+      const res = await post({ ...valid, source: "plan-builder", plan: "Package: Growth", answers });
+      expect(res.status).toBe(200);
+      expect(order).toEqual(["save", "email"]);
+      expect(db.saveLead.mock.calls[0][0]).toMatchObject({ source: "plan-builder", planSummary: "Package: Growth", answers: { board: "cbse", goals: ["admissions"] } });
+      expect(db.markLeadEmail).toHaveBeenCalledWith("lead-1", true, "");
+    });
+
+    it("keeps the lead when the email fails (and tells the visitor it worked)", async () => {
+      fetchMock.mockRejectedValueOnce(new Error("network down"));
+      const res = await post(valid);
+      expect(res.status).toBe(200);
+      expect(db.saveLead).toHaveBeenCalledOnce();
+      expect(db.markLeadEmail).toHaveBeenCalledWith("lead-1", false, "network down");
+    });
+
+    it("keeps the lead when Resend is not configured at all", async () => {
+      vi.stubEnv("RESEND_API_KEY", "");
+      expect((await post(valid)).status).toBe(200);
+      expect(db.markLeadEmail).toHaveBeenCalledWith("lead-1", false, "RESEND_API_KEY is not set");
+    });
+
+    it("still emails when the database is down", async () => {
+      db.saveLead.mockRejectedValueOnce(new Error("db down"));
+      expect((await post(valid)).status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it("fails only when both saving and emailing fail", async () => {
+      db.saveLead.mockRejectedValueOnce(new Error("db down"));
+      fetchMock.mockResolvedValueOnce(new Response("nope", { status: 500 }));
+      expect((await post(valid)).status).toBe(502);
+    });
+
+    it("ignores answers that are not a small JSON object", async () => {
+      await post({ ...valid, answers: "not json" });
+      expect(db.saveLead.mock.calls[0][0].answers).toBeNull();
+    });
   });
 });

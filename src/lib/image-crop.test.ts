@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { focalCrop, outputWidths, parseInboxName } from "./image-crop";
+import { focalCrop, outputWidths } from "./image-crop";
 
 describe("focalCrop", () => {
   it("takes the largest 16:9 area from a 3:2 source, centred by default", () => {
@@ -26,14 +26,5 @@ describe("outputWidths", () => {
   it("never upscales", () => {
     expect(outputWidths(1536, [640, 960, 1280, 1600])).toEqual([640, 960, 1280]);
     expect(outputWidths(500, [640, 960])).toEqual([500]);
-  });
-});
-
-describe("parseInboxName", () => {
-  it("reads slot ids, optional aspect and extension", () => {
-    expect(parseInboxName("industry-schools-header.png")).toEqual({ slotId: "industry-schools-header", aspect: undefined, ext: "png" });
-    expect(parseInboxName("home-hero@4x5.JPG")).toEqual({ slotId: "home-hero", aspect: "4x5", ext: "jpg" });
-    expect(parseInboxName("notes.txt")).toBeNull();
-    expect(parseInboxName("../evil.png")).toBeNull();
   });
 });

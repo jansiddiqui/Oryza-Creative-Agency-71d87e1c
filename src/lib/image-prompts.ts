@@ -21,16 +21,18 @@ export const NEGATIVE_PROMPT = [
   "identifiable children's faces, patients, or anyone presented as a client",
 ];
 
+/** Every image must pass all of these before it can be approved (enforced in the admin and on the server). */
 export const REVIEW_CHECKLIST = [
-  "Hands: five fingers each, natural joints, nothing fused or floating.",
-  "Faces: natural skin and eyes; no identifiable children or patients; nobody looks like a specific real person.",
-  "Text artefacts: zoom in on signs, screens, papers and labels — no gibberish lettering anywhere.",
-  "Indian context: clothing, buildings, vehicles, signage shapes and light feel like a real North Indian city.",
-  "Brand fit: muted warm tones that sit well next to deep green #13201C and gold #B9811A; no neon or heavy saturation.",
-  "Nothing misleading: the image does not suggest it shows Oryza's clients, results, team or office.",
-  "Crop: the subject survives the 16:9 and 4:5 crops at the focal point; nothing important near the edges.",
-  "Quality: sharp at 100% zoom, no smeared textures, no repeated patterns, no visible AI seams.",
-];
+  { id: "hands", label: "Hands and fingers look natural", hint: "Five fingers each, natural joints, nothing fused or floating." },
+  { id: "faces", label: "Faces look natural", hint: "Natural skin and eyes; no identifiable children or patients; nobody looks like a specific real person." },
+  { id: "text", label: "No text, watermarks or logos", hint: "Zoom in on signs, screens, papers and labels — no lettering, no watermark, no brand marks." },
+  { id: "india", label: "The setting is believably Indian", hint: "Clothing, buildings, vehicles, signage shapes and light feel like a real North Indian city." },
+  { id: "honest", label: "Nothing misleading", hint: "It is not shown as Oryza's client work, team, office or results." },
+  { id: "brand", label: "Matches the brand mood", hint: "Calm, natural, muted warm tones that sit with deep green #13201C and gold #B9811A; no neon or heavy saturation." },
+] as const;
+
+export type ChecklistId = (typeof REVIEW_CHECKLIST)[number]["id"];
+
 
 const fmtRatio = (a: AspectSpec) => (a.id === "og" ? "1200×630 (1.91:1)" : `${a.ratio[0]}:${a.ratio[1]}`);
 
@@ -88,14 +90,14 @@ export function promptsMarkdown(slots: ImageSlot[]): string {
     "",
     "## Workflow",
     "",
-    "1. Copy a slot's prompt into your image tool. Generate at the size shown (or larger).",
-    "2. Review it against the checklist below. Reject anything that fails a single point.",
-    "3. Save the original as `image-inbox/<slot-id>.png` (or `.jpg` / `.webp`).",
-    "   - Optional dedicated portrait version: `image-inbox/<slot-id>@4x5.png`.",
-    "   - Optional sidecar `image-inbox/<slot-id>.json`: `{ \"focal\": { \"x\": 0.6, \"y\": 0.5 }, \"source\": \"real\", \"credit\": \"…\" }`.",
-    "   - Real-only slots **require** the sidecar with `\"source\": \"real\"`.",
-    "4. Run `npm run images:process -- --by \"Your name\"`. This validates size and aspect, crops at the focal point, writes AVIF + WebP at every size to `public/images/<slot-id>/`, strips metadata and records the approval in `src/data/image-manifest.json`.",
-    "5. Commit the new files in `public/images/` and the manifest.",
+    "Images are managed in the admin: **/admin/images** (step-by-step guide: `docs/admin-images.md`).",
+    "",
+    "1. Open the slot in /admin/images and copy its prompt (and the negative prompt).",
+    "2. Generate in ChatGPT or Claude as a **landscape 3:2** image (1536×1024 or larger); pick the most natural result.",
+    "3. Upload it on the slot page, choose the source (real photo or AI illustrative) and set the focal point.",
+    "4. Tick every item of the review checklist below, then Approve. It goes live within seconds.",
+    "",
+    "Real-only slots accept real photos only — the admin and the server refuse anything else.",
     "",
     "## Negative prompt (paste where the tool supports it)",
     "",
@@ -103,7 +105,7 @@ export function promptsMarkdown(slots: ImageSlot[]): string {
     "",
     "## Human review checklist",
     "",
-    REVIEW_CHECKLIST.map((c) => `- [ ] ${c}`).join("\n"),
+    REVIEW_CHECKLIST.map((c) => `- [ ] **${c.label}** — ${c.hint}`).join("\n"),
     "",
     "## Slots",
     "",

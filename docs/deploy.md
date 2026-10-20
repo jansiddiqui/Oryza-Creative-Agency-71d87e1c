@@ -79,6 +79,9 @@ Set each for **Production** and **Preview** unless noted. Changing a variable on
 | `NEXT_PUBLIC_GA_ID` | `G-…` (**Production only**, so previews don't pollute stats) | no |
 | `NEXT_PUBLIC_CLARITY_ID` | Clarity project ID (**Production only**) | no |
 | `NEXT_PUBLIC_GSC_VERIFICATION` | only if using the HTML-tag method | no |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (admin, images, leads — `docs/supabase-setup.md`) | no |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key | no |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key — server only | **yes** |
 
 Site URL, phone, email and WhatsApp already default to these values in `src/lib/site.ts`, so the site works even before they're set.
 
