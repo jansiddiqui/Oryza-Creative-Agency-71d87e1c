@@ -30,15 +30,17 @@ The old site saved newsletter emails to a Supabase table called `subscribers`. T
 Every contact-form and plan-builder lead is emailed to **contact@oryzaonline.in** through Resend.
 
 1. Create an account at https://resend.com → **Domains → Add domain** → `oryzaonline.in`. Pick a region (any; the values below change with it).
-2. Resend then shows **three records**. Add them in **Cloudflare → oryzaonline.in → DNS → Records → Add record**. Enter names without the domain; set **Proxy status = DNS only** and **TTL = Auto**:
+2. Add the records Resend shows, **copied exactly**, in **Cloudflare → oryzaonline.in → DNS → Records → Add record**. Enter names without the domain; set **Proxy status = DNS only** and **TTL = Auto**. Resend's record set varies by account and region.
 
-   | Type | Name | Content | Priority |
-   | --- | --- | --- | --- |
-   | `MX` | `send` | `feedback-smtp.<region>.amazonses.com` (copy exactly from Resend) | `10` |
-   | `TXT` | `send` | `v=spf1 include:amazonses.com ~all` | — |
-   | `TXT` | `resend._domainkey` | `p=…` (long DKIM key, copy exactly from Resend; it's unique to your account) | — |
+   **Live and verified for oryzaonline.in (checked 20 Oct 2026):**
 
-   Only add the "inbound" MX record if Resend offers one **and** you want to receive mail in Resend. **You don't need it; skip it.**
+   | Type | Name | Content |
+   | --- | --- | --- |
+   | `CNAME` | `send` | `send.forge.rmta.net` (Resend's bounce/return-path host; supplies the `send` MX and SPF) |
+   | `TXT` | `resend._domainkey` | `p=…` (DKIM public key, unique to this account) |
+
+   Older Resend setups instead use `MX send → feedback-smtp.<region>.amazonses.com` + `TXT send → v=spf1 include:amazonses.com ~all`. Use whichever Resend shows. Only add an "inbound" MX if you want to receive mail in Resend (**you don't; skip it**).
+   To check from any computer: `nslookup -type=txt resend._domainkey.oryzaonline.in` and `nslookup -type=mx send.oryzaonline.in`.
 3. **Don't change or remove any existing record.** In particular, keep:
    - `MX @ → smtp.nevtan.com` (your mailbox for contact@oryzaonline.in)
    - `TXT @ → v=spf1 include:_spf.nevtan.com ~all` (don't add Resend to this one; Resend's SPF lives on `send`)
