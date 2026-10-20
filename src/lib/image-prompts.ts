@@ -1,25 +1,43 @@
 /**
- * Rule-based image prompt builder (no AI API): turns a slot from the registry into a ready-to-copy prompt
- * for an image tool, plus the negatives and the human review checklist every image must pass.
- * `real-only` slots never get a prompt.
+ * Rule-based image prompts (no AI API). Every illustrative slot gets a complete, ready-to-paste prompt —
+ * copy it into ChatGPT, Gemini or Midjourney and nothing needs to be added. Each prompt has the same 11 parts:
+ * opening, FORMAT, PURPOSE, SCENE, PEOPLE, COMPOSITION, CAMERA, LIGHT, COLOUR PALETTE AND GRADE,
+ * REALISM DETAILS and DO NOT INCLUDE. Slot-specific scenes live in src/data/image-scenes.ts.
+ *
+ * `real-only` slots never get a prompt; share-image slots made from a page header use the header's image.
  */
 import type { AspectSpec, ImageSlot } from "@/data/image-slots";
+import { sceneBriefs, type SceneBrief, type SceneVariant } from "@/data/image-scenes";
 
-export const STYLE_GUIDE =
-  "documentary photograph, real location in a North Indian city (e.g. Kanpur), natural daylight, candid moment, true-to-life skin and textures, muted warm palette that fits deep green + warm gold, shallow depth of field, shot on a 35mm lens, no text, no logos, no watermarks, no extra fingers, no plastic skin, no CGI/3D look, no over-saturation, no futuristic elements";
+export const OPENING =
+  "Create ONE photorealistic photograph. It must look like a real, unretouched editorial photo taken by a professional documentary photographer — not an illustration or 3D render, and it must not look AI-generated.";
 
-export const NEGATIVE_PROMPT = [
-  "text, letters, signage, captions, watermarks, logos, brand names",
-  "party symbols, flags, religious symbols used as decoration",
-  "extra or missing fingers, deformed hands, distorted faces, mismatched eyes",
-  "plastic or airbrushed skin, wax-like faces, uncanny smiles",
-  "CGI, 3D render, illustration, cartoon, anime, painting",
-  "over-saturated colours, neon, heavy HDR, lens flares, bokeh orbs",
-  "futuristic or sci-fi elements, holograms, glowing UI",
-  "Western stock-photo settings, snow, non-Indian architecture or street signs",
-  "posed corporate stock look, people looking into the camera",
-  "identifiable children's faces, patients, or anyone presented as a client",
-];
+export const FORMAT = "FORMAT: Landscape, 3:2 aspect ratio, 1536 × 1024 pixels. One single image — no collage, border, frame or text.";
+
+export const COLOUR_GRADE =
+  "COLOUR PALETTE AND GRADE: Calm, warm, slightly muted. Shadows lean deep forest green (close to #13201C); midtones warm cream and off-white (#F3EDE0, #FBF8F1); sunlit highlights soft warm gold (#E8B84A, #B9811A). Foliage muted toward olive. No saturated reds, bright blues or neon. Graded like Kodak Portra 400: soft contrast, gentle highlight roll-off, true-to-life skin tones.";
+
+/** Applies to every prompt, before the slot's own negatives. */
+export const SHARED_NEGATIVES =
+  "any text, letters, numbers, signboards, logos, watermarks or emblems; phone screens showing apps; distorted or extra fingers; plastic or airbrushed skin; identical faces; anyone posing or looking at the camera; Western settings; luxury or futuristic elements; dramatic sunsets; heavy vignette; HDR; over-sharpening; cartoon, painting or 3D style";
+
+export const BRAND_HEX = ["#13201C", "#F3EDE0", "#FBF8F1", "#E8B84A", "#B9811A"] as const;
+
+export const PROMPT_SECTIONS = [
+  "Create ONE photorealistic photograph",
+  "FORMAT:",
+  "PURPOSE:",
+  "SCENE:",
+  "PEOPLE:",
+  "COMPOSITION:",
+  "CAMERA:",
+  "LIGHT:",
+  "COLOUR PALETTE AND GRADE:",
+  "REALISM DETAILS:",
+  "DO NOT INCLUDE:",
+] as const;
+
+export type PromptVariant = "main" | "alt";
 
 /** Every image must pass all of these before it can be approved (enforced in the admin and on the server). */
 export const REVIEW_CHECKLIST = [
@@ -32,7 +50,6 @@ export const REVIEW_CHECKLIST = [
 ] as const;
 
 export type ChecklistId = (typeof REVIEW_CHECKLIST)[number]["id"];
-
 
 const fmtRatio = (a: AspectSpec) => (a.id === "og" ? "1200×630 (1.91:1)" : `${a.ratio[0]}:${a.ratio[1]}`);
 
@@ -54,56 +71,56 @@ export function sourceSize(slot: ImageSlot): { width: number; height: number; ra
   return { ...need, ratio: `${need.width}:${need.height}` };
 }
 
-function composition(slot: ImageSlot): string {
-  const f = slot.focal ?? { x: 0.5, y: 0.5 };
-  const h = f.x < 0.42 ? "left of centre" : f.x > 0.58 ? "right of centre" : "centred";
-  const parts = [`main subject ${h}`];
-  if (slot.aspects.some((a) => a.id === "4x5")) parts.push("keep the subject inside the middle third so a 4:5 portrait crop still works");
-  if (slot.aspects.some((a) => a.id === "og")) parts.push("nothing important within 60px of the edges");
-  return parts.join("; ");
-}
-
-/** Ready-to-copy prompt, or null for real-only slots (those must be real photos). */
-export function buildPrompt(slot: ImageSlot): string | null {
-  if (slot.type === "real-only") return null;
-  const size = sourceSize(slot);
+function assemble(b: SceneBrief, v: SceneVariant): string {
+  const other = b.textSide === "left" ? "left" : "right";
   return [
-    `${slot.subject.charAt(0).toUpperCase()}${slot.subject.slice(1)}.`,
-    `Style: ${STYLE_GUIDE}.`,
-    `Composition: ${composition(slot)}.`,
-    `Aspect ratio ${size.ratio}, at least ${size.width}×${size.height}px (it is cropped to ${slot.aspects.map(fmtRatio).join(" and ")}).`,
-  ].join(" ");
+    OPENING,
+    FORMAT,
+    `PURPOSE: ${b.purpose}`,
+    `SCENE: ${v.scene}`,
+    `PEOPLE: ${v.people}`,
+    `COMPOSITION: ${v.placement} Keep the ${other} third calm (${v.calm}) so text can sit there. Keep all important content inside the central 60% of the frame so it also crops to a 4:5 portrait and a 1.91:1 banner. ${v.angle}`,
+    `CAMERA: Full-frame camera, ${b.camera} Very subtle film grain.`,
+    `LIGHT: ${v.light} No flash, no studio light, no HDR.`,
+    COLOUR_GRADE,
+    `REALISM DETAILS: ${v.realism} Lived-in and imperfect — nothing glossy.`,
+    `DO NOT INCLUDE: ${SHARED_NEGATIVES}; ${b.negatives}.`,
+  ].join("\n\n");
 }
 
-/** Markdown for docs/image-prompts.md: every slot, its sizes and its prompt. */
+/** The scene brief behind a slot's prompt, if it gets one. */
+export function briefFor(slot: ImageSlot): SceneBrief | null {
+  if (slot.type === "real-only" || slot.deriveFrom) return null;
+  return sceneBriefs[slot.id] ?? null;
+}
+
+/**
+ * Complete prompt for a slot (main scene or alternative scene), or null when the slot gets none:
+ * real-only slots (real photos only) and share images made from a page header.
+ */
+export function buildPrompt(slot: ImageSlot, variant: PromptVariant = "main"): string | null {
+  const b = briefFor(slot);
+  return b ? assemble(b, b[variant]) : null;
+}
+
+export const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
+
+/** Markdown for docs/image-prompts.md: every slot, its sizes and both prompts. */
 export function promptsMarkdown(slots: ImageSlot[]): string {
   const lines: string[] = [
     "# Image prompts",
     "",
-    "Generated by `npm run images:prompts` from `src/data/image-slots.ts` — do not edit by hand.",
+    "Generated by `npm run images:prompts` from `src/data/image-slots.ts` and `src/data/image-scenes.ts` — do not edit by hand.",
     "",
-    "## Rules",
+    "## How to use",
+    "",
+    "Copy a prompt → paste into ChatGPT, Gemini or Midjourney → generate 3–4 versions → pick the most natural one → upload it in **/admin/images** (guide: `docs/admin-images.md`). Nothing needs to be added to the prompt.",
     "",
     "- **Illustrative** slots may use AI-generated images as decorative or concept scenes only.",
     "- **Real-only** slots (work, team, clients, results, our office) take a **real photo or nothing**. No prompt is given for them.",
-    "- Real photos always win: if a real photo exists for an illustrative slot, use it.",
+    "- Share images (OG) are made automatically from their page header.",
     "",
-    "## Workflow",
-    "",
-    "Images are managed in the admin: **/admin/images** (step-by-step guide: `docs/admin-images.md`).",
-    "",
-    "1. Open the slot in /admin/images and copy its prompt (and the negative prompt).",
-    "2. Generate in ChatGPT or Claude as a **landscape 3:2** image (1536×1024 or larger); pick the most natural result.",
-    "3. Upload it on the slot page, choose the source (real photo or AI illustrative) and set the focal point.",
-    "4. Tick every item of the review checklist below, then Approve. It goes live within seconds.",
-    "",
-    "Real-only slots accept real photos only — the admin and the server refuse anything else.",
-    "",
-    "## Negative prompt (paste where the tool supports it)",
-    "",
-    NEGATIVE_PROMPT.map((n) => `- ${n}`).join("\n"),
-    "",
-    "## Human review checklist",
+    "## Human review checklist (before approving)",
     "",
     REVIEW_CHECKLIST.map((c) => `- [ ] **${c.label}** — ${c.hint}`).join("\n"),
     "",
@@ -118,13 +135,17 @@ export function promptsMarkdown(slots: ImageSlot[]): string {
     lines.push(`- **Type:** ${s.type === "real-only" ? "**real-only** (real photo required)" : "illustrative"}`);
     lines.push(`- **Crops:** ${s.aspects.map((a) => `${fmtRatio(a)} (${a.widths.join(", ")} px${a.media ? `, ${a.media}` : ""})`).join("; ")}`);
     lines.push(`- **Source needed:** at least ${size.width}×${size.height}px`);
-    if (s.deriveFrom) lines.push(`- **If empty:** made from \`${s.deriveFrom}\``);
     lines.push(`- **Placement:** ${s.placement}`);
     lines.push(`- **Alt text:** ${s.alt}`);
     lines.push("");
-    const prompt = buildPrompt(s);
-    if (prompt) lines.push("```text", prompt, "```", "");
-    else lines.push(`> Real photo only. Brief: ${s.subject}.`, "");
+    const main = buildPrompt(s, "main");
+    if (main) {
+      lines.push("**Prompt**", "", "```text", main, "```", "", "**Alternative scene**", "", "```text", buildPrompt(s, "alt")!, "```", "");
+    } else if (s.deriveFrom) {
+      lines.push(`> Made automatically from \`${s.deriveFrom}\` when that image is approved. Upload here only for a different share image.`, "");
+    } else {
+      lines.push(`> Real photo only — no AI prompt. Brief: ${s.subject}.`, "");
+    }
   }
   return lines.join("\n");
 }

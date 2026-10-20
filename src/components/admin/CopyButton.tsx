@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
+export function CopyButton({ text, label = "Copy", primary = false }: { text: string; label?: string; primary?: boolean }) {
   const [done, setDone] = useState(false);
   return (
     <button
@@ -16,7 +16,7 @@ export function CopyButton({ text, label = "Copy" }: { text: string; label?: str
           setDone(false);
         }
       }}
-      className="rounded-full border border-ink/20 px-4 py-1.5 text-[13px] font-semibold hover:border-ink"
+      className={`rounded-full px-5 py-2.5 text-[14px] font-semibold ${primary ? "bg-ink text-paper hover:bg-ink-soft" : "border border-ink/20 hover:border-ink"}`}
     >
       <span aria-live="polite">{done ? "Copied" : label}</span>
     </button>

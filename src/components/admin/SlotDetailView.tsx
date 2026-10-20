@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ImageSlot } from "@/data/image-slots";
-import { buildPrompt, NEGATIVE_PROMPT, sourceSize } from "@/lib/image-prompts";
+import { buildPrompt, sourceSize } from "@/lib/image-prompts";
 import type { VersionView } from "@/lib/admin/images-data";
 import { AdminTitle, StatusBadge, sourceLabel } from "./AdminShell";
 import { CopyButton } from "./CopyButton";
@@ -14,9 +14,9 @@ const publicPageExists = (page: string) => !page.startsWith("/industries/") || p
 export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: VersionView[] }) {
   const live = versions.find((v) => v.status === "live");
   const pending = versions.find((v) => v.status === "uploaded");
-  const prompt = buildPrompt(slot);
+  const prompt = buildPrompt(slot, "main");
+  const altPrompt = buildPrompt(slot, "alt");
   const size = sourceSize(slot);
-  const negative = NEGATIVE_PROMPT.join("; ");
   return (
     <>
       <Link href="/admin/images" className="text-[14px] font-semibold text-gold-700 underline-offset-4 hover:underline">← All images</Link>
@@ -71,25 +71,32 @@ export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: 
         </section>
 
         <section aria-labelledby="prompt-h" className="rounded-2xl border border-line bg-cream/60 p-5 sm:p-6">
-          <h2 id="prompt-h" className="font-display text-2xl">{prompt ? "Prompt" : "Real photo needed"}</h2>
+          <h2 id="prompt-h" className="font-display text-2xl">{prompt ? "Prompt" : slot.deriveFrom ? "Made from the page header" : "Real photo needed"}</h2>
           {prompt ? (
             <>
-              <ol className="mt-3 list-decimal space-y-1 pl-5 text-[14px] text-ink-soft">
-                <li>Copy the prompt into ChatGPT or Claude.</li>
-                <li>Generate as a <strong>landscape 3:2</strong> image ({size.width}×{size.height} or larger).</li>
-                <li>Pick the most natural result — no text, no odd hands, nothing that looks like a client or our team.</li>
-                <li>Upload it below, set the focal point, tick the checklist, approve.</li>
-              </ol>
-              <div className="mt-4 rounded-xl border border-line bg-paper p-4">
-                <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{prompt}</p>
-                <div className="mt-3"><CopyButton text={prompt} label="Copy prompt" /></div>
+              <p className="mt-2 text-[14px] text-ink-soft">
+                Paste into ChatGPT, Gemini or Midjourney. Generate 3–4 versions and pick the most natural one.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <CopyButton text={prompt} label="Copy prompt" primary />
+                {altPrompt && <CopyButton text={altPrompt} label="Copy alternative scene" />}
               </div>
-              <div className="mt-3 rounded-xl border border-line bg-paper p-4">
-                <p className="text-[13px] font-semibold">Negative prompt</p>
-                <p className="mt-1 text-[13px] text-muted">{negative}</p>
-                <div className="mt-3"><CopyButton text={negative} label="Copy negative prompt" /></div>
-              </div>
+              <details className="mt-4 rounded-xl border border-line bg-paper p-4">
+                <summary className="cursor-pointer text-[14px] font-semibold">Read the prompt</summary>
+                <p className="mt-3 whitespace-pre-wrap text-[13px] leading-relaxed text-ink-soft">{prompt}</p>
+              </details>
+              {altPrompt && (
+                <details className="mt-3 rounded-xl border border-line bg-paper p-4">
+                  <summary className="cursor-pointer text-[14px] font-semibold">Read the alternative scene</summary>
+                  <p className="mt-3 whitespace-pre-wrap text-[13px] leading-relaxed text-ink-soft">{altPrompt}</p>
+                </details>
+              )}
             </>
+          ) : slot.deriveFrom ? (
+            <p className="mt-3 text-[14px] text-ink-soft">
+              This share image is made automatically from the{" "}
+              <Link href={`/admin/images/${slot.deriveFrom}`} className="font-semibold underline">page header image</Link> when it is approved. Upload here only if you want a different share image.
+            </p>
           ) : (
             <p className="mt-3 text-[14px] text-ink-soft">
               This slot shows real work, people or places, so there is no AI prompt. Brief for the photo: {slot.subject}. Upload a real photo below.
