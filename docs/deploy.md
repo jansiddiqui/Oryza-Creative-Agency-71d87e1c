@@ -55,7 +55,7 @@ Every contact-form and plan-builder lead is emailed to **contact@oryzaonline.in*
   Alternative, URL-prefix property with the HTML tag method: put only the `content="…"` value into `NEXT_PUBLIC_GSC_VERIFICATION`.
 
 ### 1.4 Fill the TODOs
-Search the code for `TODO` (`src/lib/site.ts`, the legal pages, `.env.example`). Still open: street address and PIN, hours, WhatsApp number, social profile URLs, legal entity name, and the legal review of `/privacy-policy` and `/terms`.
+Search the code for `TODO` (`src/lib/site.ts`, the legal pages, `.env.example`). Still open: street address and PIN, hours, social profile URLs, GA4/Clarity IDs, legal entity name, and the legal review of `/privacy-policy` and `/terms`. All are optional for go-live; empty values are hidden.
 
 ---
 
@@ -68,7 +68,7 @@ Set each for **Production** and **Preview** unless noted. Changing a variable on
 | `NEXT_PUBLIC_SITE_URL` | `https://www.oryzaonline.in` | no |
 | `NEXT_PUBLIC_PHONE` | `+91 7007345134` | no |
 | `NEXT_PUBLIC_EMAIL` | `contact@oryzaonline.in` | no |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | TODO, digits only, e.g. `917007345134` | no |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | `917007345134` | no |
 | `NEXT_PUBLIC_ADDRESS_STREET`, `NEXT_PUBLIC_ADDRESS_PIN`, `NEXT_PUBLIC_HOURS` | TODO | no |
 | `NEXT_PUBLIC_INSTAGRAM_URL`, `…_FACEBOOK_URL`, `…_LINKEDIN_URL`, `…_YOUTUBE_URL` | TODO | no |
 | `RESEND_API_KEY` | from §1.2 | **yes** |
@@ -78,7 +78,9 @@ Set each for **Production** and **Preview** unless noted. Changing a variable on
 | `NEXT_PUBLIC_CLARITY_ID` | Clarity project ID (**Production only**) | no |
 | `NEXT_PUBLIC_GSC_VERIFICATION` | only if using the HTML-tag method | no |
 
-Phone, email and site URL already default to these values in `src/lib/site.ts`, so the site works even before they're set.
+Site URL, phone, email and WhatsApp already default to these values in `src/lib/site.ts`, so the site works even before they're set.
+
+**Domain:** `www.oryzaonline.in` is canonical. In Vercel → Project → **Domains**, `www.oryzaonline.in` must be the primary domain (no redirect) and `oryzaonline.in` must show **Redirect to www.oryzaonline.in (308)**. That's already the setup today; don't change it at go-live.
 
 ---
 

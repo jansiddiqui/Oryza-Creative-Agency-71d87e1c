@@ -39,7 +39,7 @@ npm run build && npm start   # production
 
 ## Before launch
 See `docs/deploy.md`. Open items:
-- [ ] Street address + PIN, hours, WhatsApp number, social profile URLs (`src/lib/site.ts` / env)
+- [ ] Street address + PIN, hours, social profile URLs (`src/lib/site.ts` / env)
 - [ ] Resend domain verified and `RESEND_API_KEY` set, so leads arrive
 - [ ] GA4 and Clarity IDs, Search Console verified
 - [ ] Legal review of `/privacy-policy` and `/terms`

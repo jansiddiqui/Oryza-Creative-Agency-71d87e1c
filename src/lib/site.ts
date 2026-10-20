@@ -10,6 +10,7 @@ export const site = {
   tagline: "Social media, run like a brand should be.",
   description:
     "Social media management for every business — schools, clinics, real estate, leaders, restaurants and more. Get a free day-by-day plan from Oryza.",
+  // Canonical host is www; Vercel redirects oryzaonline.in → www.oryzaonline.in.
   url: env(process.env.NEXT_PUBLIC_SITE_URL, "https://www.oryzaonline.in").replace(/\/$/, ""),
   city: "Kanpur",
   region: "Uttar Pradesh",
@@ -22,8 +23,8 @@ export const site = {
   },
   // TODO: business hours, e.g. "Mon–Sat, 10:00–19:00". Hidden until set.
   hours: env(process.env.NEXT_PUBLIC_HOURS),
-  // TODO: confirm the WhatsApp Business number. Digits only, with country code, e.g. 917007345134.
-  whatsapp: env(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER).replace(/\D/g, ""),
+  // WhatsApp Business number: same as the phone. Digits only, with country code.
+  whatsapp: env(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER, "917007345134").replace(/\D/g, ""),
   phone: env(process.env.NEXT_PUBLIC_PHONE, "+91 7007345134"),
   email: env(process.env.NEXT_PUBLIC_EMAIL, "contact@oryzaonline.in"),
   // TODO: Oryza's own profile URLs. Empty ones are hidden.
