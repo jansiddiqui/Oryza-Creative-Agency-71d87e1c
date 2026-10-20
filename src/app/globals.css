@@ -12,9 +12,12 @@
   --color-gold-500: #b9811a;
   --color-gold-300: #e8b84a;
   --color-gold-100: #f7e8c4;
+}
 
-  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+/* Fonts come from next/font (src/app/fonts.ts), which sets these variables on <html>. */
+@theme inline {
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html {
@@ -24,7 +27,7 @@ html {
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -40,6 +43,11 @@ body {
   border-radius: 4px;
 }
 
+.font-display-italic {
+  font-family: var(--font-fraunces-italic), Georgia, "Times New Roman", serif;
+  font-style: italic;
+}
+
 .gold-text {
   background: linear-gradient(100deg, #8f5e0a 0%, #c48a1d 35%, #e8b84a 55%, #b9811a 80%);
   -webkit-background-clip: text;
@@ -52,16 +60,67 @@ body {
   background: linear-gradient(90deg, transparent, #b9811a 20%, #e8b84a 50%, #b9811a 80%, transparent);
 }
 
+/* ---------- Motion ----------
+ * Everything here is opacity/transform only (no layout shift) and is switched off for prefers-reduced-motion.
+ * Scroll reveals are armed by RevealObserver only for elements below the fold, so content is never hidden
+ * without JavaScript and nothing on first paint waits for an animation.
+ */
 @media (prefers-reduced-motion: no-preference) {
+  /* Above-the-fold headers: start from opacity 0.01, not 0, so the text still counts as painted for LCP. */
   .reveal {
     animation: reveal 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
   .reveal-2 { animation-delay: 0.08s; }
   .reveal-3 { animation-delay: 0.16s; }
   @keyframes reveal {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0.01; transform: translateY(12px); }
     to { opacity: 1; transform: none; }
   }
+
+  [data-reveal] {
+    transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal].reveal-armed { opacity: 0; transform: translateY(14px); }
+  /* Infographics stay in place; their parts animate instead. */
+  [data-reveal="draw"].reveal-armed { opacity: 1; transform: none; }
+
+  .draw-line { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 0.75s ease-out var(--reveal-delay, 0ms); }
+  .reveal-armed .draw-line { stroke-dashoffset: 1; }
+  .grow-x, .grow-y { transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms); }
+  .grow-x { transform-origin: left center; }
+  .grow-y { transform-origin: center bottom; transform-box: fill-box; }
+  .reveal-armed .grow-x { transform: scaleX(0); }
+  .reveal-armed .grow-y { transform: scaleY(0); }
+  .pop { transition: opacity 0.4s ease-out var(--reveal-delay, 0ms), transform 0.4s ease-out var(--reveal-delay, 0ms); transform-box: fill-box; transform-origin: center; }
+  .reveal-armed .pop { opacity: 0; transform: scale(0.6); }
+
+  /* Cards: gentle lift and a gold edge. */
+  .card-lift { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+  .card-lift:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--color-gold-500) 55%, var(--color-line)); box-shadow: 0 14px 30px -22px rgb(19 32 28 / 0.45); }
+  .card-lift .oz-icon, .icon-hover .oz-icon { transition: transform 0.25s ease, color 0.25s ease; }
+  .card-lift:hover .oz-icon, .icon-hover:hover .oz-icon { transform: translateY(-1px) scale(1.06); color: var(--color-gold-700); }
+  .btn-arrow .oz-icon { transition: transform 0.2s ease; }
+  .btn-arrow:hover .oz-icon { transform: translateX(3px); }
+
+  /* Plan builder: steps and generated days ease in on mount. */
+  .step-enter { animation: step-enter 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  @keyframes step-enter {
+    from { opacity: 0.01; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .seq-enter { animation: step-enter 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: var(--seq-delay, 0ms); }
+
+  /* Sticky header: logo eases smaller and a hairline shadow appears once the page scrolls (height never changes). */
+  .site-header { transition: box-shadow 0.3s ease, background-color 0.3s ease; }
+  .site-header .header-logo { transition: transform 0.3s ease; transform-origin: left center; }
+  .site-header[data-scrolled] .header-logo { transform: scale(0.9); }
+}
+
+.site-header[data-scrolled] { box-shadow: 0 1px 0 rgb(19 32 28 / 0.06), 0 8px 24px -18px rgb(19 32 28 / 0.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 @media print {

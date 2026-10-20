@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { nav } from "@/lib/site";
 import { ButtonLink, Container } from "./ui";
+import { HeaderScroll } from "./motion/HeaderScroll";
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <span className="flex items-center gap-2.5">
+    <span className="header-logo flex items-center gap-2.5">
       <Image src="/brand/oryza-icon.png" alt="" width={34} height={34} priority />
       <Image
         src={light ? "/brand/oryza-wordmark-light.png" : "/brand/oryza-wordmark.png"}
@@ -20,7 +21,8 @@ export function Logo({ light = false }: { light?: boolean }) {
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-paper/85 backdrop-blur-md">
+    <header id="site-header" className="site-header sticky top-0 z-40 border-b border-line/70 bg-paper/85 backdrop-blur-md">
+      <HeaderScroll targetId="site-header" />
       <Container className="flex h-16 items-center justify-between gap-6">
         <Link href="/" aria-label="Oryza Creative Agency — home">
           <Logo />

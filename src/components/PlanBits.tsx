@@ -1,6 +1,7 @@
 import type { PlatformId } from "@/data/platforms";
 import type { PlanDay, PlanItem } from "@/lib/engine/types";
 import { fmtDate } from "@/lib/engine/dates";
+import { CameraIcon, PlatformIcon } from "@/components/icons";
 
 export const platformMeta: Record<PlatformId, { short: string; dot: string }> = {
   instagram: { short: "Instagram", dot: "#C13584" },
@@ -23,7 +24,7 @@ export function ItemRow({ item, compact }: { item: PlanItem; compact?: boolean }
   const m = platformMeta[item.platform];
   return (
     <li className="flex gap-3 py-2.5">
-      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: m.dot }} aria-hidden />
+      <PlatformIcon id={item.platform} size={16} className="mt-0.5 text-ink-soft" />
       <div className="min-w-0 flex-1">
         <p className="text-[13px] leading-snug">
           <span className="font-semibold">{m.short} {formatLabel[item.format] ?? item.format}</span>
@@ -48,18 +49,19 @@ export function ItemRow({ item, compact }: { item: PlanItem; compact?: boolean }
   );
 }
 
-export function DayCard({ day, compact }: { day: PlanDay; compact?: boolean }) {
+export function DayCard({ day, compact, headingLevel = 3 }: { day: PlanDay; compact?: boolean; headingLevel?: 2 | 3 }) {
+  const H = headingLevel === 2 ? "h2" : "h3";
   return (
     <article className="break-inside-avoid rounded-2xl border border-line bg-paper p-5">
       <header className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
-        <h4 className="font-display text-xl">Day {day.day}</h4>
+        <H className="font-display text-xl">Day {day.day}</H>
         <p className="text-sm text-muted">
           {day.weekday}, {fmtDate(day.date)}
         </p>
       </header>
       {day.shoot && (
         <div className="mt-3 rounded-xl bg-ink px-4 py-3 text-paper">
-          <p className="text-[13px] font-semibold text-gold-300">{day.shoot.label}</p>
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-gold-300"><CameraIcon size={16} />{day.shoot.label}</p>
           {!compact && (
             <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[13px] text-paper/80">
               {day.shoot.shots.map((s) => <li key={s}>{s}</li>)}

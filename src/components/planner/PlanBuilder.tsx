@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { categories, categoryBySlug } from "@/data/categories";
+import { categoryBySlug } from "@/data/categories";
 import { platforms, platformById, type PlatformId } from "@/data/platforms";
 import { schoolOptions } from "@/data/playbooks/school";
 import { generateSchoolPlan, packages, type EventKind, type Goal, type SchoolAnswers } from "@/lib/engine/school-engine";
@@ -11,6 +11,7 @@ import type { Plan } from "@/lib/engine/types";
 import { inputCls, labelCls, LeadForm, LeadStatus, sendLead, type LeadResult } from "@/components/LeadForm";
 import { FitChip } from "@/components/ui";
 import { PlanView } from "./PlanView";
+import { CategoryStep } from "./CategoryStep";
 import { whatsappLink } from "@/lib/site";
 
 type Step = "category" | "basics" | "goals" | "details" | "presence" | "package" | "plan" | "other";
@@ -72,7 +73,9 @@ export function PlanBuilder() {
   const toggle = <T,>(arr: T[], v: T, max = 99) => (arr.includes(v) ? arr.filter((x) => x !== v) : arr.length >= max ? arr : [...arr, v]);
 
   const idx = SCHOOL_STEPS.indexOf(step);
-  const go = (s: Step) => { setStep(s); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  // Step transitions animate only after the visitor has moved, never on first render.
+  const [moved, setMoved] = useState(false);
+  const go = (s: Step) => { setMoved(true); setStep(s); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const next = () => {
     if (idx < SCHOOL_STEPS.length - 1) return go(SCHOOL_STEPS[idx + 1]);
     const p = generateSchoolPlan({
@@ -93,35 +96,18 @@ export function PlanBuilder() {
   // ---------- Step: category ----------
   if (step === "category")
     return (
-      <div>
-        <h2 className="font-display text-3xl tracking-tight">What kind of business or brand are you?</h2>
-        <p className="mt-2 text-muted">Pick the closest one. The questions change with your answer.</p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
-            <button
-              key={c.slug}
-              type="button"
-              onClick={() => { setCategory(c.slug); go(c.plannerLive ? "basics" : "other"); }}
-              className="rounded-2xl border border-line bg-paper p-5 text-left transition-colors hover:border-ink"
-            >
-              <p className="font-semibold">{c.name}</p>
-              <p className="mt-1 text-[13px] text-muted">{c.audience}</p>
-              {c.plannerLive && <p className="mt-2 text-[12px] font-bold uppercase tracking-wider text-gold-700">Instant detailed plan</p>}
-            </button>
-          ))}
-          <button type="button" onClick={() => { setCategory(""); go("other"); }} className="rounded-2xl border border-dashed border-line p-5 text-left hover:border-ink">
-            <p className="font-semibold">Something else</p>
-            <p className="mt-1 text-[13px] text-muted">Tell us about it and a strategist will plan it with you.</p>
-          </button>
-        </div>
-      </div>
+      <CategoryStep
+        key="category"
+        className={moved ? "step-enter" : ""}
+        onPick={(slug, live) => { setCategory(slug); go(slug && live ? "basics" : "other"); }}
+      />
     );
 
   // ---------- Step: other categories ----------
   if (step === "other") {
     const c = categoryBySlug[category];
     return (
-      <div className="space-y-10">
+      <div key="other" className={`space-y-10 ${moved ? "step-enter" : ""}`}>
         <button type="button" onClick={() => go("category")} className="text-sm font-semibold text-gold-700">← Change category</button>
         <div>
           <h2 className="font-display text-3xl tracking-tight">{c ? `${c.name}: where you should be` : "Tell us about your brand"}</h2>
@@ -177,7 +163,7 @@ export function PlanBuilder() {
       </form>
     );
     return (
-      <div>
+      <div key="plan" className={moved ? "step-enter" : ""}>
         <div className="no-print mb-10 flex flex-wrap items-center justify-between gap-4">
           <button type="button" onClick={() => go("package")} className="text-sm font-semibold text-gold-700">← Edit answers</button>
           {unlocked && (
@@ -208,10 +194,11 @@ export function PlanBuilder() {
   // ---------- School questionnaire ----------
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (canNext) next(); }}>
-      <div className="mb-8 flex items-center gap-2" aria-label={`Step ${idx + 1} of ${SCHOOL_STEPS.length}`}>
-        {SCHOOL_STEPS.map((s, i) => <span key={s} className={`h-1.5 flex-1 rounded-full ${i <= idx ? "bg-gold-500" : "bg-line"}`} />)}
+      <div className="mb-8 h-1.5 overflow-hidden rounded-full bg-line" role="progressbar" aria-label="Questionnaire progress" aria-valuemin={1} aria-valuemax={SCHOOL_STEPS.length} aria-valuenow={idx + 1}>
+        <div className="h-full rounded-full bg-gold-500 transition-[width] duration-500 ease-out motion-reduce:transition-none" style={{ width: `${((idx + 1) / SCHOOL_STEPS.length) * 100}%` }} />
       </div>
       <p className="text-sm font-semibold text-gold-700">Schools · step {idx + 1} of {SCHOOL_STEPS.length}</p>
+      <div key={step} className={moved ? "step-enter" : ""}>
 
       {step === "basics" && (
         <div className="mt-3 space-y-7">
@@ -318,6 +305,7 @@ export function PlanBuilder() {
         </div>
       )}
 
+      </div>
       <div className="mt-10 flex items-center justify-between gap-4 border-t border-line pt-6">
         <button type="button" onClick={back} className="text-sm font-semibold text-muted hover:text-ink">← Back</button>
         <button type="submit" disabled={!canNext} className="rounded-full bg-ink px-7 py-3 font-semibold text-paper hover:bg-ink-soft disabled:opacity-50">

@@ -5,6 +5,11 @@ import { platforms } from "@/data/platforms";
 import { samplePlan } from "@/lib/sample";
 import { DayCard } from "@/components/PlanBits";
 import { Arrow, ButtonLink, Container, Eyebrow } from "@/components/ui";
+import { ApprovalIcon, CheckIcon, IndustryIcon, PlatformIcon, ReportIcon } from "@/components/icons";
+import { ProcessFlow } from "@/components/infographics/ProcessFlow";
+import { PlanTimeline } from "@/components/infographics/PlanTimeline";
+import { SlotImage } from "@/components/images/SlotImage";
+import { revealDelay } from "@/components/motion/reveal";
 import { JsonLd } from "@/components/JsonLd";
 import { site } from "@/lib/site";
 
@@ -14,16 +19,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const steps = [
-  { t: "Answer a few questions", d: "Your business, audience, goals, key dates and platforms. The questions change with your industry." },
-  { t: "Get a day-by-day plan", d: "Every reel, post and story for 30 days: the hook, the call to action, who shoots it and when it goes live." },
-  { t: "We run it with you", d: "Shoot days, weekly approvals, publishing, replies and a monthly report. Nothing goes out without your approval." },
-];
-
 const promises = [
-  { t: "No fake followers", d: "We grow real audiences with content, never bought numbers." },
-  { t: "No guaranteed numbers", d: "Anyone promising exact reach is guessing. We plan, measure and improve." },
-  { t: "Nothing posted without you", d: "You approve each week’s content before it goes live." },
+  { t: "No fake followers", d: "We grow real audiences with content, never bought numbers.", Icon: CheckIcon },
+  { t: "No guaranteed numbers", d: "Anyone promising exact reach is guessing. We plan, measure and improve.", Icon: ReportIcon },
+  { t: "Nothing posted without you", d: "You approve each week’s content before it goes live.", Icon: ApprovalIcon },
 ];
 
 function websiteSchema() {
@@ -64,7 +63,7 @@ export default function Home() {
               Sample plan · fictional school
             </p>
             <div className="grid gap-4">
-              {sampleDays.map((d) => <DayCard key={d.day} day={d} compact />)}
+              {sampleDays.map((d) => <DayCard key={d.day} day={d} compact headingLevel={2} />)}
             </div>
             <p className="mt-3 text-[13px] text-muted">
               An example of what the planner produces. <Link href="/industries/schools" className="font-semibold text-gold-700 underline">See the full school plan</Link>.
@@ -73,20 +72,26 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* Wide visual band: only rendered once an approved image exists for the slot. */}
+      <SlotImage slot="home-hero" sizes="100vw" className="max-h-[560px]" />
+
       {/* Industries */}
       <section>
         <Container className="py-20">
           <Eyebrow>Who we work with</Eyebrow>
           <h2 className="max-w-2xl font-display text-4xl tracking-tight">A different playbook for every kind of business.</h2>
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
-              <li key={c.slug}>
+            {categories.map((c, i) => (
+              <li key={c.slug} data-reveal="" style={revealDelay(i, 50)}>
                 <Link
                   href={c.plannerLive ? `/industries/${c.slug}` : `/plan-builder?category=${c.slug}`}
-                  className="flex h-full flex-col rounded-2xl border border-line bg-paper p-5 transition-colors hover:border-ink"
+                  className="card-lift flex h-full items-start gap-4 rounded-2xl border border-line bg-paper p-5"
                 >
-                  <span className="font-semibold">{c.name}</span>
-                  <span className="mt-1 text-[13px] text-muted">{c.audience}</span>
+                  <IndustryIcon slug={c.slug} size={26} accent className="mt-0.5 text-ink" />
+                  <span>
+                    <span className="block font-semibold">{c.name}</span>
+                    <span className="mt-1 block text-[13px] text-muted">{c.audience}</span>
+                  </span>
                 </Link>
               </li>
             ))}
@@ -105,18 +110,31 @@ export default function Home() {
         <Container className="py-20">
           <Eyebrow light>How it works</Eyebrow>
           <h2 className="max-w-2xl font-display text-4xl tracking-tight">From four minutes of questions to a month of content.</h2>
-          <ol className="mt-12 grid gap-10 md:grid-cols-3">
-            {steps.map((s, i) => (
-              <li key={s.t}>
-                <span className="font-display text-3xl text-gold-300">{String(i + 1).padStart(2, "0")}</span>
-                <h3 className="mt-3 font-display text-2xl">{s.t}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-paper/75">{s.d}</p>
-              </li>
-            ))}
-          </ol>
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-paper/75">
+            You answer, we plan, set up your profiles, shoot, send each week for approval, publish and report — then plan the next month from what worked.
+          </p>
+          <ProcessFlow light className="mt-14" />
           <div className="mt-12">
             <ButtonLink href="/how-it-works" variant="light">The full process <Arrow /></ButtonLink>
           </div>
+        </Container>
+      </section>
+
+      {/* A month at a glance */}
+      <section className="border-b border-line">
+        <Container className="grid gap-12 py-20 lg:grid-cols-[0.8fr_1.2fr]">
+          <div data-reveal="">
+            <Eyebrow>A month at a glance</Eyebrow>
+            <h2 className="font-display text-4xl tracking-tight">Every day planned, every shoot day booked.</h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
+              This is a real output of the planner for a fictional school in admission season: what goes out each day,
+              which days we shoot, and which posts are pinned to key dates.
+            </p>
+            <div className="mt-8">
+              <ButtonLink href="/plan-builder" variant="ghost">Build yours <Arrow /></ButtonLink>
+            </div>
+          </div>
+          <PlanTimeline plan={samplePlan} caption="Sample plan · fictional school, 30 days." />
         </Container>
       </section>
 
@@ -136,10 +154,13 @@ export default function Home() {
             </div>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
-            {platforms.map((p) => (
-              <li key={p.id} className="rounded-2xl border border-line bg-paper p-5">
-                <p className="font-semibold">{p.name}</p>
-                <p className="mt-1 text-[13px] text-muted">{p.job}</p>
+            {platforms.map((p, i) => (
+              <li key={p.id} data-reveal="" style={revealDelay(i, 50)} className="card-lift flex items-start gap-3.5 rounded-2xl border border-line bg-paper p-5">
+                <PlatformIcon id={p.id} size={24} accent className="mt-0.5" />
+                <span>
+                  <span className="block font-semibold">{p.name}</span>
+                  <span className="mt-1 block text-[13px] text-muted">{p.job}</span>
+                </span>
               </li>
             ))}
           </ul>
@@ -149,8 +170,9 @@ export default function Home() {
       {/* Promises */}
       <section className="border-t border-line bg-cream/50">
         <Container className="grid gap-8 py-16 md:grid-cols-3">
-          {promises.map((p) => (
-            <div key={p.t}>
+          {promises.map((p, i) => (
+            <div key={p.t} data-reveal="" style={revealDelay(i)}>
+              <p.Icon size={28} accent className="mb-3 text-ink" />
               <p className="font-display text-2xl">{p.t}</p>
               <p className="mt-2 text-[15px] text-muted">{p.d}</p>
             </div>

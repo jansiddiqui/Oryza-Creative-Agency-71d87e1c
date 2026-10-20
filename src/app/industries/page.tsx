@@ -4,6 +4,8 @@ import { categories } from "@/data/categories";
 import { platformById, type PlatformId } from "@/data/platforms";
 import { Arrow, Container, PageHeader } from "@/components/ui";
 import { JsonLd, breadcrumbSchema } from "@/components/JsonLd";
+import { IndustryIcon, PlatformIcon } from "@/components/icons";
+import { revealDelay } from "@/components/motion/reveal";
 
 export const metadata: Metadata = {
   title: "Social media management for every industry",
@@ -22,15 +24,19 @@ export default function Industries() {
       />
       <section>
         <Container className="grid gap-5 py-20 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => {
+          {categories.map((c, i) => {
             const core = (Object.keys(c.fit) as PlatformId[]).filter((p) => c.fit[p] === "core");
             return (
-              <article key={c.slug} className="flex flex-col rounded-2xl border border-line bg-paper p-7">
+              <article key={c.slug} data-reveal="" style={revealDelay(i % 3)} className="card-lift flex flex-col rounded-2xl border border-line bg-paper p-7">
+                <IndustryIcon slug={c.slug} size={32} accent className="mb-4 text-ink" />
                 <h2 className="font-display text-2xl">{c.name}</h2>
-                <p className="mt-3 font-display text-lg italic leading-snug text-ink-soft">“{c.feeling}”</p>
+                <p className="font-display-italic mt-3 text-lg leading-snug text-ink-soft">“{c.feeling}”</p>
                 <p className="mt-3 text-[14px] text-muted"><strong className="text-ink">Talks to:</strong> {c.audience}</p>
-                <p className="mt-2 text-[14px] text-muted">
+                <p className="mt-3 text-[14px] text-muted">
                   <strong className="text-ink">Core platforms:</strong> {core.map((p) => platformById[p].name).join(", ")}
+                </p>
+                <p className="mt-2 flex flex-wrap gap-2 text-ink-soft" aria-hidden>
+                  {core.map((p) => <PlatformIcon key={p} id={p} size={18} />)}
                 </p>
                 <div className="mt-auto pt-6">
                   {c.plannerLive ? (

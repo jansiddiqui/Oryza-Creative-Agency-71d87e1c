@@ -3,6 +3,7 @@ import { categories } from "@/data/categories";
 import { addressLine, legalNav, nav, site, telHref } from "@/lib/site";
 import { Logo } from "./Header";
 import { Container } from "./ui";
+import { IndustryIcon, MailIcon, PhoneIcon, PinIcon } from "./icons";
 
 export function Footer() {
   return (
@@ -15,10 +16,10 @@ export function Footer() {
             Social media strategy, content and management for every kind of business — planned day by day, approved
             by you, run by our team in {site.city}.
           </p>
-          <address className="mt-5 space-y-1 text-sm not-italic">
-            <a href={telHref(site.phone)} className="block hover:text-paper">{site.phone}</a>
-            <a href={`mailto:${site.email}`} className="block hover:text-paper">{site.email}</a>
-            <span className="block">{addressLine()}</span>
+          <address className="mt-5 space-y-2 text-sm not-italic">
+            <a href={telHref(site.phone)} className="flex items-center gap-2.5 hover:text-paper"><PhoneIcon size={16} className="text-gold-300" />{site.phone}</a>
+            <a href={`mailto:${site.email}`} className="flex items-center gap-2.5 hover:text-paper"><MailIcon size={16} className="text-gold-300" />{site.email}</a>
+            <span className="flex items-center gap-2.5"><PinIcon size={16} className="text-gold-300" />{addressLine()}</span>
           </address>
           {site.social.length > 0 && (
             <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
@@ -44,7 +45,10 @@ export function Footer() {
           <ul className="space-y-2.5 text-sm">
             {categories.slice(0, 7).map((c) => (
               <li key={c.slug}>
-                <Link href={c.plannerLive ? `/industries/${c.slug}` : "/industries"} className="hover:text-paper">{c.name}</Link>
+                <Link href={c.plannerLive ? `/industries/${c.slug}` : "/industries"} className="flex items-center gap-2.5 hover:text-paper">
+                  <IndustryIcon slug={c.slug} size={16} className="text-gold-300" />
+                  {c.name}
+                </Link>
               </li>
             ))}
           </ul>
