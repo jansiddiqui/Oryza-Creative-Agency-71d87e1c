@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Arrow, ButtonLink, Container, Eyebrow, PageHeader } from "@/components/ui";
 import { JsonLd, breadcrumbSchema } from "@/components/JsonLd";
+import { processSteps } from "@/data/process";
+import { processIcons } from "@/components/icons";
+import { ProcessFlow } from "@/components/infographics/ProcessFlow";
+import { slotMedia } from "@/components/images/SlotImage";
+import { revealDelay } from "@/components/motion/reveal";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -9,16 +14,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/how-it-works" },
 };
 
-const phases = [
-  { t: "You answer a few questions", d: "Your business type, audience, goals, key dates, strengths and which platforms you want. The questions change by industry — a school is asked about admissions, a leader about the constituency." },
-  { t: "You get a detailed plan", d: "A 30-day calendar with every reel, post, story and platform update: what it is, the hook, who shoots it and when it goes live. Built from our written playbooks, not guesswork." },
-  { t: "Kick-off and profile optimization", d: "We take access, audit your accounts and, if you choose the add-on, optimize each profile in the first 7–10 days." },
-  { t: "Shoot days", d: "Every shoot has a planned shot list made from the calendar, so one visit covers weeks of content." },
-  { t: "Weekly approvals", d: "You see each week’s content before it goes out. Nothing is published without your approval." },
-  { t: "Publishing and replies", d: "We publish at the planned times, reply to comments and DMs in working hours and pass every lead to your WhatsApp." },
-  { t: "Monthly report and next month", d: "Reach, followers, inquiries and top content — then the next month’s plan, adjusted to what worked." },
-];
-
 export default function HowItWorks() {
   return (
     <>
@@ -26,19 +21,29 @@ export default function HowItWorks() {
         eyebrow="How it works"
         title="A plan you can see. A team you can hold to it."
         intro="Every client gets the same clear process. You always know what is being made, when it goes live and how it performed."
+        media={slotMedia("how-it-works-header")}
       />
+      <section className="border-b border-line">
+        <Container className="py-16">
+          <ProcessFlow />
+        </Container>
+      </section>
       <section>
         <Container className="py-20">
           <ol className="relative space-y-10 border-l border-line pl-8 sm:pl-12">
-            {phases.map((p, i) => (
-              <li key={p.t} className="relative">
-                <span className="absolute -left-[45px] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-300 sm:-left-[61px]">
-                  {i + 1}
-                </span>
-                <h2 className="font-display text-2xl">{p.t}</h2>
-                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">{p.d}</p>
-              </li>
-            ))}
+            {processSteps.map((p, i) => {
+              const Icon = processIcons[p.id];
+              return (
+                <li key={p.id} className="relative" data-reveal="" style={revealDelay(i, 60)}>
+                  <span className="absolute -left-[49px] top-0 flex h-9 w-9 items-center justify-center rounded-full bg-ink text-gold-300 sm:-left-[67px]">
+                    <Icon size={18} />
+                  </span>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>
+                  <h2 className="mt-1 font-display text-2xl">{p.title}</h2>
+                  <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">{p.detail}</p>
+                </li>
+              );
+            })}
           </ol>
         </Container>
       </section>

@@ -4,6 +4,8 @@ import { LeadForm } from "@/components/LeadForm";
 import { ButtonLink, Container, PageHeader } from "@/components/ui";
 import { JsonLd, breadcrumbSchema } from "@/components/JsonLd";
 import { addressLine, site, telHref, whatsappLink } from "@/lib/site";
+import { ClockIcon, MailIcon, PhoneIcon, PinIcon } from "@/components/icons";
+import { SlotImage } from "@/components/images/SlotImage";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -24,14 +26,27 @@ export default function Contact() {
         <Container className="grid gap-14 py-20 lg:grid-cols-[1.3fr_0.7fr]">
           <LeadForm waHref={wa} />
           <aside className="space-y-6 rounded-2xl bg-cream/60 p-7">
+            {/* Real photo of the team/studio only — renders nothing until one is approved. */}
+            <SlotImage slot="contact-studio" sizes="(min-width: 1024px) 30vw, 100vw" className="rounded-xl" />
             {wa && <ButtonLink href={wa} external className="w-full">Chat on WhatsApp</ButtonLink>}
-            <div className="text-[15px]">
-              <p className="font-semibold">Based in</p>
-              <p className="text-muted">{addressLine()}</p>
+            <div className="flex gap-3 text-[15px]">
+              <PinIcon size={20} accent className="mt-0.5" />
+              <div><p className="font-semibold">Based in</p><p className="text-muted">{addressLine()}</p></div>
             </div>
-            {site.hours && <div className="text-[15px]"><p className="font-semibold">Hours</p><p className="text-muted">{site.hours}</p></div>}
-            <div className="text-[15px]"><p className="font-semibold">Call</p><a href={telHref(site.phone)} className="text-muted hover:text-ink">{site.phone}</a></div>
-            <div className="text-[15px]"><p className="font-semibold">Email</p><a href={`mailto:${site.email}`} className="text-muted hover:text-ink">{site.email}</a></div>
+            {site.hours && (
+              <div className="flex gap-3 text-[15px]">
+                <ClockIcon size={20} accent className="mt-0.5" />
+                <div><p className="font-semibold">Hours</p><p className="text-muted">{site.hours}</p></div>
+              </div>
+            )}
+            <div className="flex gap-3 text-[15px]">
+              <PhoneIcon size={20} accent className="mt-0.5" />
+              <div><p className="font-semibold">Call</p><a href={telHref(site.phone)} className="text-muted hover:text-ink">{site.phone}</a></div>
+            </div>
+            <div className="flex gap-3 text-[15px]">
+              <MailIcon size={20} accent className="mt-0.5" />
+              <div><p className="font-semibold">Email</p><a href={`mailto:${site.email}`} className="text-muted hover:text-ink">{site.email}</a></div>
+            </div>
             <p className="text-[13px] text-muted">Prefer to see a plan first? <Link href="/plan-builder" className="font-semibold text-gold-700 underline">Build your free plan</Link>.</p>
           </aside>
         </Container>

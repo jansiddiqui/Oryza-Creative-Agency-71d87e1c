@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/fraunces";
-import "@fontsource-variable/manrope";
 import "./globals.css";
+import { fraunces, frauncesItalic, manrope } from "./fonts";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Analytics } from "@/components/Analytics";
+import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd, organizationSchema } from "@/components/JsonLd";
 import { site } from "@/lib/site";
 
@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN">
+    <html lang="en-IN" className={`${fraunces.variable} ${frauncesItalic.variable} ${manrope.variable}`}>
       <body className="min-h-dvh flex flex-col">
         <a
           href="#main"
@@ -52,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <JsonLd data={organizationSchema()} />
         <Analytics />
+        <RevealObserver />
       </body>
     </html>
   );

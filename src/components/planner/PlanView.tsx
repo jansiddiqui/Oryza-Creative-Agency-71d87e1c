@@ -4,6 +4,13 @@ import type { Plan } from "@/lib/engine/types";
 import { fmtDate } from "@/lib/engine/dates";
 import { DayCard } from "@/components/PlanBits";
 import { FitChip } from "@/components/ui";
+import { CameraIcon, PlatformIcon } from "@/components/icons";
+import { PillarMix } from "@/components/infographics/PillarMix";
+import { PlanTimeline } from "@/components/infographics/PlanTimeline";
+import type { CSSProperties } from "react";
+
+/** Days ease in one after another (CSS, reduced-motion safe). */
+const seq = (i: number): CSSProperties => ({ ["--seq-delay" as string]: `${Math.min(i, 7) * 60}ms` }) as CSSProperties;
 
 function Section({ n, title, children, className = "" }: { n: number; title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -48,6 +55,7 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
         <ul className="grid gap-3 sm:grid-cols-2">
           {plan.platforms.filter((p) => p.fit !== "skip" || p.selected).map((p) => (
             <li key={p.id} className={`flex items-start gap-3 rounded-xl border p-4 ${p.selected ? "border-ink" : "border-line opacity-70"}`}>
+              <PlatformIcon id={p.id} size={22} accent className="mt-0.5" />
               <FitChip fit={p.fit} label={p.fit === "core" ? "Core" : p.fit === "add" ? "Add" : "Extra"} />
               <div>
                 <p className="font-semibold">{p.name} {p.selected ? "" : <span className="text-[13px] font-normal text-muted">(not selected)</span>}</p>
@@ -62,7 +70,7 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
         <>
           <Section n={6} title="Your first week">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {visibleWeeks[0].map((d) => <DayCard key={d.day} day={d} />)}
+              {visibleWeeks[0].map((d, i) => <div key={d.day} className="seq-enter" style={seq(i)}><DayCard day={d} /></div>)}
             </div>
           </Section>
           <div className="no-print">{lockSlot}</div>
@@ -77,7 +85,7 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
               <div className="grid gap-4 md:grid-cols-2">
                 {plan.optimization.map((o) => (
                   <div key={o.platform} className="rounded-2xl border border-line p-5">
-                    <p className="font-display text-xl">{o.name}</p>
+                    <p className="flex items-center gap-2.5 font-display text-xl"><PlatformIcon id={o.platform} size={22} accent />{o.name}</p>
                     <ul className="mt-2 space-y-1 text-[14px] text-muted">{o.items.map((i) => <li key={i}>☐ {i}</li>)}</ul>
                   </div>
                 ))}
@@ -86,24 +94,21 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
           )}
 
           <Section n={5} title="Content pillars">
-            <ul className="space-y-3">
-              {plan.pillars.map((p) => (
-                <li key={p.name}>
-                  <div className="flex justify-between text-[15px]"><span className="font-semibold">{p.name}</span><span className="text-muted">{p.pct}%</span></div>
-                  <div className="mt-1.5 h-2 rounded-full bg-cream"><div className="h-2 rounded-full bg-gold-500" style={{ width: `${Math.min(100, p.pct * 2.5)}%` }} /></div>
-                </li>
-              ))}
-            </ul>
+            <PillarMix pillars={plan.pillars} caption="Share of your posts and reels by theme this month." />
           </Section>
 
           <Section n={6} title="Your 30-day calendar">
+            <div className="mb-12 rounded-2xl border border-line bg-cream/40 p-5 sm:p-7">
+              <p className="mb-4 font-display text-xl">The month at a glance</p>
+              <PlanTimeline plan={plan} />
+            </div>
             {visibleWeeks.map((w, i) => (
               <div key={i} className={i ? "print-break mt-10" : ""}>
                 <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.15em] text-gold-700">
                   Week {i + 1} · {fmtDate(w[0].date)} – {fmtDate(w[w.length - 1].date)}
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {w.map((d) => <DayCard key={d.day} day={d} />)}
+                  {w.map((d, j) => <div key={d.day} className="seq-enter" style={seq(j)}><DayCard day={d} /></div>)}
                 </div>
               </div>
             ))}
@@ -113,7 +118,7 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {plan.deliverables.map((d) => (
                 <div key={d.platform} className="rounded-2xl border border-line p-5">
-                  <p className="font-display text-xl">{d.name}</p>
+                  <p className="flex items-center gap-2.5 font-display text-xl"><PlatformIcon id={d.platform} size={22} accent />{d.name}</p>
                   <ul className="mt-2 space-y-1 text-[14px] text-muted">{d.lines.map((l) => <li key={l}>{l}</li>)}</ul>
                 </div>
               ))}
@@ -125,7 +130,7 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
               <div className="grid gap-4 md:grid-cols-2">
                 {plan.shootDays.map((s) => (
                   <div key={s.day} className="rounded-2xl bg-ink p-6 text-paper">
-                    <p className="text-sm text-gold-300">Day {s.day} · {fmtDate(s.date)}</p>
+                    <p className="flex items-center gap-2 text-sm text-gold-300"><CameraIcon size={16} />Day {s.day} · {fmtDate(s.date)}</p>
                     <p className="mt-1 font-display text-xl">{s.label}</p>
                     <ul className="mt-3 list-disc space-y-1 pl-5 text-[14px] text-paper/80">{s.shots.map((x) => <li key={x}>{x}</li>)}</ul>
                   </div>

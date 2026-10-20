@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PlanBuilder } from "@/components/planner/PlanBuilder";
+import { CategoryStep } from "@/components/planner/CategoryStep";
 import { Container, Eyebrow } from "@/components/ui";
 import { JsonLd, breadcrumbSchema } from "@/components/JsonLd";
 
@@ -24,7 +25,8 @@ export default function PlanBuilderPage() {
       </section>
       <section>
         <Container className="py-12 sm:py-16">
-          <Suspense fallback={<p className="text-muted">Loading the planner…</p>}>
+          {/* The fallback is the planner's first step itself, so the page never jumps while it loads. */}
+          <Suspense fallback={<CategoryStep />}>
             <PlanBuilder />
           </Suspense>
         </Container>

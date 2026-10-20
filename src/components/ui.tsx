@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ArrowRightIcon } from "./icons";
 
 type Variant = "primary" | "gold" | "ghost" | "light";
 
@@ -23,7 +24,7 @@ export function ButtonLink({
   className?: string;
   external?: boolean;
 }) {
-  const cls = `inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-semibold transition-colors ${styles[variant]} ${className}`;
+  const cls = `btn-arrow inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-semibold transition-[background-color,border-color,transform] active:scale-[0.98] motion-reduce:active:scale-100 ${styles[variant]} ${className}`;
   if (external)
     return (
       <a href={href} className={cls} target="_blank" rel="noopener noreferrer">
@@ -54,26 +55,34 @@ export function Container({ children, className = "" }: { children: ReactNode; c
   return <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className}`}>{children}</div>;
 }
 
-export function PageHeader({ eyebrow, title, intro }: { eyebrow: string; title: ReactNode; intro: ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  intro,
+  media,
+}: {
+  eyebrow: string;
+  title: ReactNode;
+  intro: ReactNode;
+  /** Optional image beside the headline (e.g. an approved image slot). */
+  media?: ReactNode;
+}) {
   return (
     <section className="border-b border-line bg-cream/50">
-      <Container className="py-16 sm:py-24">
+      <Container className={`py-16 sm:py-24 ${media ? "grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]" : ""}`}>
         <div className="reveal max-w-3xl">
           <Eyebrow>{eyebrow}</Eyebrow>
           <h1 className="font-display text-4xl leading-[1.08] tracking-tight sm:text-6xl">{title}</h1>
           <p className="mt-6 text-lg leading-relaxed text-muted">{intro}</p>
         </div>
+        {media && <div className="reveal reveal-2 overflow-hidden rounded-2xl">{media}</div>}
       </Container>
     </section>
   );
 }
 
 export function Arrow() {
-  return (
-    <svg aria-hidden width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <ArrowRightIcon size={16} />;
 }
 
 const fitStyle = {

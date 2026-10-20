@@ -29,8 +29,24 @@ npm run build && npm start   # production
 | `src/lib/site.ts` | Business details. Real values are defaults, unknowns are TODO |
 | `src/data/redirects.ts` | 301s from every old-site URL (tested in `redirects.test.ts`) |
 | `src/components/Analytics.tsx` | GA4 + Microsoft Clarity, loaded only when their env IDs are set |
+| `src/components/icons/` | One SVG icon set (24px grid, 1.5px stroke, `currentColor`, optional gold `accent`): UI, platforms, industries, services, process |
+| `src/components/infographics/` | Fit matrix, process flow, 30-day timeline, pillar mix, package comparison — all drawn from real site data |
+| `src/components/motion/` | Scroll reveals (armed below the fold only), sticky-header state; all motion is CSS and off for reduced motion |
+| `src/data/image-slots.ts` | Every image position: page, subject, crops, alt text, `illustrative` vs `real-only` |
+| `src/data/image-manifest.json` | Processed images per slot: files, focal point, source, `approved_by` / `approved_at` |
+| `src/components/images/SlotImage.tsx` | `<SlotImage slot="…" />`: art-directed AVIF/WebP `<picture>`, or the brand fallback |
+| `docs/image-prompts.md` | Generated prompts, negatives and review checklist for every slot |
 | `docs/old-site-audit.md` | Audit of the retired static site |
 | `docs/deploy.md` | Env vars, Resend DNS, go-live, post-launch checks, rollback |
+
+## Images
+AI-generated images are allowed **only** in `illustrative` slots, as decorative scenes. `real-only` slots (work, team,
+clients, results, office) take real photos or nothing.
+```bash
+npm run images:prompts                       # writes docs/image-prompts.md
+# generate + review each image, save as image-inbox/<slot-id>.png
+npm run images:process -- --by "Your name"   # validate, crop, AVIF+WebP, manifest (approval)
+```
 
 ## Adding a new category playbook
 1. Copy `src/data/playbooks/school.ts` and write the audiences, pillars, rules and 60+ templates.

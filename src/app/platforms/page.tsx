@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { platforms } from "@/data/platforms";
 import { categories } from "@/data/categories";
-import { Container, Eyebrow, FitChip, PageHeader } from "@/components/ui";
+import { Container, Eyebrow, PageHeader } from "@/components/ui";
+import { PlatformIcon } from "@/components/icons";
+import { FitMatrix } from "@/components/infographics/FitMatrix";
+import { slotMedia } from "@/components/images/SlotImage";
+import { revealDelay } from "@/components/motion/reveal";
 import { JsonLd, breadcrumbSchema } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
@@ -18,13 +22,14 @@ export default function Platforms() {
         eyebrow="Platform guide"
         title="Every platform has a different job."
         intro="Posting the same thing everywhere wastes your audience’s attention. Here is what each platform does for a brand, and where it fits."
+        media={slotMedia("platforms-header")}
       />
       <section>
         <Container className="py-20">
           <div className="grid gap-5 md:grid-cols-2">
-            {platforms.map((p) => (
-              <article key={p.id} className="rounded-2xl border border-line bg-paper p-7">
-                <h2 className="font-display text-2xl">{p.name}</h2>
+            {platforms.map((p, i) => (
+              <article key={p.id} data-reveal="" style={revealDelay(i % 2)} className="card-lift rounded-2xl border border-line bg-paper p-7">
+                <h2 className="flex items-center gap-3 font-display text-2xl"><PlatformIcon id={p.id} size={28} accent />{p.name}</h2>
                 <p className="mt-1 font-semibold text-gold-700">{p.job}</p>
                 <dl className="mt-4 space-y-2 text-[15px]">
                   <div><dt className="inline font-semibold">Formats: </dt><dd className="inline text-muted">{p.formats}</dd></div>
@@ -42,32 +47,10 @@ export default function Platforms() {
           <Eyebrow>Platform fit by industry</Eyebrow>
           <h2 className="font-display text-4xl tracking-tight">Where your business should be</h2>
           <p className="mt-3 max-w-2xl text-muted">
-            <strong className="text-ink">Core</strong> platforms are always in the plan. <strong className="text-ink">Add</strong> platforms are recommended when the goal or budget allows.
+            {categories.length} industries × {platforms.length} platforms. Each business needs only some of them — this is where we start every plan.
           </p>
-          <div className="mt-10 overflow-x-auto rounded-2xl border border-line bg-paper">
-            <table className="w-full min-w-[860px] text-left text-sm">
-              <caption className="sr-only">Platform fit by industry</caption>
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className="p-4 font-semibold">Industry</th>
-                  {platforms.map((p) => (
-                    <th key={p.id} scope="col" className="p-4 font-semibold">{p.name.replace(" Business Profile", "").replace(" & Google indexing", "")}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((c) => (
-                  <tr key={c.slug} className="border-b border-line/60 last:border-0">
-                    <th scope="row" className="p-4 font-semibold">{c.name}</th>
-                    {platforms.map((p) => (
-                      <td key={p.id} className="p-4">
-                        <FitChip fit={c.fit[p.id]} label={c.fit[p.id] === "core" ? "Core" : c.fit[p.id] === "add" ? "Add" : "—"} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mt-10">
+            <FitMatrix categories={categories} />
           </div>
         </Container>
       </section>
