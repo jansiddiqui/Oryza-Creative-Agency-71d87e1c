@@ -66,7 +66,7 @@ export const categories: Category[] = [
     name: "Restaurants & cafés",
     audience: "Local food lovers, families and groups planning an outing",
     feeling: "I have to try this place this weekend.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "add", "core", "add", "core", "add", "skip", "skip", "add"),
   },
   {
@@ -74,7 +74,7 @@ export const categories: Category[] = [
     name: "Coaching institutes",
     audience: "Students and the parents who pay the fees",
     feeling: "These teachers will get me the result.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "core", "core", "core", "skip", "skip", "skip"),
   },
   {

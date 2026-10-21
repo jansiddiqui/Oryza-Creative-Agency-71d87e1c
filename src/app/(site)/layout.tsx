@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Analytics } from "@/components/Analytics";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd, organizationSchema } from "@/components/JsonLd";
+import { PlatformSprite } from "@/components/icons";
 
 /** Public website chrome: header, footer, schema, analytics and scroll reveals. Not used by /admin. */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Skip to content
       </a>
+      <PlatformSprite />
       <Header />
       <main id="main" className="flex-1">
         {children}

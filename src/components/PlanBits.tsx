@@ -23,31 +23,40 @@ const formatLabel: Record<string, string> = {
 export function ItemRow({ item, compact }: { item: PlanItem; compact?: boolean }) {
   const m = platformMeta[item.platform];
   return (
-    <li className="flex gap-3 py-2.5">
-      <PlatformIcon id={item.platform} size={16} className="mt-0.5 text-ink-soft" />
-      <div className="min-w-0 flex-1">
-        <p className="text-[13px] leading-snug">
-          <span className="font-semibold">{m.short} {formatLabel[item.format] ?? item.format}</span>
+    <li className="pi">
+      <PlatformIcon id={item.platform} size={16} className="pi-icon" />
+      <div className="pi-body">
+        <p className="pi-meta">
+          <b className="font-semibold">{m.short} {formatLabel[item.format] ?? item.format}</b>
           <span className="text-muted"> · {item.time}</span>
-          {item.pinnedReason && !compact && (
-            <span className="ml-2 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-semibold text-gold-700">
-              {item.pinnedReason}
-            </span>
-          )}
+          {item.pinnedReason && !compact && <span className="pi-badge">{item.pinnedReason}</span>}
         </p>
-        <p className="mt-0.5 text-[15px] font-medium leading-snug text-ink">{item.title}</p>
-        {!compact && item.hook && <p className="mt-0.5 text-[13px] leading-snug text-muted">{item.hook}</p>}
+        <p className="pi-title">{item.title}</p>
+        {!compact && item.hook && <p className="pi-hook">{item.hook}</p>}
         {!compact && (item.who || item.cta) && (
-          <p className="mt-1 text-[12px] text-muted">
+          <p className="pi-by">
             {item.who && <>By: {item.who}</>}
             {item.who && item.cta && " · "}
             {item.cta && <>CTA: {item.cta}</>}
           </p>
         )}
-        {!compact && item.note && <p className="mt-1 text-[12px] font-medium text-ink-soft">Note: {item.note}</p>}
+        {!compact && item.note && <p className="pi-note">Note: {item.note}</p>}
       </div>
     </li>
   );
+}
+
+/**
+ * Three days from week 2 of a sample plan for the industry pages: days pinned to a key date first, then the
+ * busiest, shown in calendar order. Keeps those pages light while still showing the full level of detail.
+ */
+export function showcaseDays(days: PlanDay[], count = 3): PlanDay[] {
+  const week = days.slice(7, 14);
+  const pinned = (d: PlanDay) => d.items.some((i) => i.pinnedReason);
+  return [...week]
+    .sort((x, y) => Number(pinned(y)) - Number(pinned(x)) || y.items.length - x.items.length || x.day - y.day)
+    .slice(0, count)
+    .sort((x, y) => x.day - y.day);
 }
 
 export function DayCard({ day, compact, headingLevel = 3 }: { day: PlanDay; compact?: boolean; headingLevel?: 2 | 3 }) {

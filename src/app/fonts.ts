@@ -13,11 +13,14 @@ export const fraunces = localFont({
   adjustFontFallback: "Times New Roman",
 });
 
-/** Italic is used for a few quotes only, so it is not preloaded (use the `font-display-italic` class). */
+/**
+ * Italic is used for a few quotes only, so it is not preloaded (use the `font-display-italic` class). "optional"
+ * so a late italic file never swaps in and shifts the quote (first visits may keep the matched fallback).
+ */
 export const frauncesItalic = localFont({
   src: [{ path: "../../node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-italic.woff2", weight: "100 900", style: "italic" }],
   variable: "--font-fraunces-italic",
-  display: "swap",
+  display: "optional",
   preload: false,
   fallback: ["Georgia", "serif"],
   adjustFontFallback: "Times New Roman",

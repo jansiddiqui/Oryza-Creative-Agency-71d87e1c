@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { categories } from "@/data/categories";
 import { platforms } from "@/data/platforms";
-import { samplePlan } from "@/lib/sample";
+import { samplePlan } from "@/lib/samples/school";
 import { DayCard } from "@/components/PlanBits";
 import { Arrow, ButtonLink, Container, Eyebrow } from "@/components/ui";
 import { ApprovalIcon, CheckIcon, IndustryIcon, PlatformIcon, ReportIcon } from "@/components/icons";
@@ -76,7 +76,7 @@ export default function Home() {
       <SlotImage slot="home-hero" sizes="100vw" className="max-h-[560px]" />
 
       {/* Industries */}
-      <section>
+      <section className="cv-auto">
         <Container className="py-20">
           <Eyebrow>Who we work with</Eyebrow>
           <h2 className="max-w-2xl font-display text-4xl tracking-tight">A different playbook for every kind of business.</h2>
@@ -105,7 +105,7 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="bg-ink text-paper">
+      <section className="cv-auto bg-ink text-paper">
         <div className="gold-rule" />
         <Container className="py-20">
           <Eyebrow light>How it works</Eyebrow>
@@ -121,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* A month at a glance */}
-      <section className="border-b border-line">
+      <section className="cv-auto border-b border-line">
         <Container className="grid gap-12 py-20 lg:grid-cols-[0.8fr_1.2fr]">
           <div data-reveal="">
             <Eyebrow>A month at a glance</Eyebrow>
@@ -139,7 +139,7 @@ export default function Home() {
       </section>
 
       {/* Services and platforms */}
-      <section>
+      <section className="cv-auto">
         <Container className="grid gap-12 py-20 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <Eyebrow>What you pay for</Eyebrow>
@@ -168,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* Promises */}
-      <section className="border-t border-line bg-cream/50">
+      <section className="cv-auto border-t border-line bg-cream/50">
         <Container className="grid gap-8 py-16 md:grid-cols-3">
           {promises.map((p, i) => (
             <div key={p.t} data-reveal="" style={revealDelay(i)}>
@@ -181,7 +181,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section>
+      <section className="cv-auto">
         <Container className="flex flex-col items-start gap-6 py-20 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="font-display text-4xl tracking-tight">See your plan before you pay anything.</h2>

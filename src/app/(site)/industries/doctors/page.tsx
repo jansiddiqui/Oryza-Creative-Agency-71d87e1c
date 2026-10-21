@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { doctorPlaybook } from "@/data/playbooks/doctor";
-import { sampleDoctorPlan } from "@/lib/sample";
+import { sampleDoctorPlan } from "@/lib/samples/medical";
 import { IndustryDetail } from "@/components/IndustryDetail";
 import { healthDaysVarying, medicalRules } from "@/data/medical";
 import { ogImageUrl } from "@/lib/images/live";

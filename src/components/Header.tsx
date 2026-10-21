@@ -1,20 +1,23 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 import { nav } from "@/lib/site";
 import { ButtonLink, Container } from "./ui";
 import { HeaderScroll } from "./motion/HeaderScroll";
 
+/**
+ * The logo as plain <img> tags with next/image's optimised sources (getImageProps): no client image
+ * component on every page. The header logo loads with priority; the footer's light version lazily.
+ */
 export function Logo({ light = false }: { light?: boolean }) {
+  const priority = !light;
+  const { props: icon } = getImageProps({ src: "/brand/oryza-icon.png", alt: "", width: 34, height: 34, priority });
+  const { props: word } = getImageProps({ src: light ? "/brand/oryza-wordmark-light.png" : "/brand/oryza-wordmark.png", alt: "Oryza", width: 96, height: 19, priority });
   return (
     <span className="header-logo flex items-center gap-2.5">
-      <Image src="/brand/oryza-icon.png" alt="" width={34} height={34} priority />
-      <Image
-        src={light ? "/brand/oryza-wordmark-light.png" : "/brand/oryza-wordmark.png"}
-        alt="Oryza"
-        width={96}
-        height={19}
-        priority
-      />
+      {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- optimised sources from getImageProps; decorative alt="" */}
+      <img {...icon} />
+      {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- optimised sources and alt from getImageProps */}
+      <img {...word} />
     </span>
   );
 }

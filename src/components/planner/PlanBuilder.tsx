@@ -1,10 +1,10 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { categoryBySlug } from "@/data/categories";
 import { platforms, platformById, type PlatformId } from "@/data/platforms";
-import { packages, type PackageId } from "@/lib/engine/core";
+import { packages, type PackageId } from "@/lib/engine/packages";
 import { fmtDate, nextMonday } from "@/lib/engine/dates";
 import type { Plan } from "@/lib/engine/types";
 import { inputCls, labelCls, LeadForm, LeadStatus, sendLead, type LeadResult } from "@/components/LeadForm";
@@ -12,9 +12,10 @@ import { FitChip } from "@/components/ui";
 import { PlanView } from "./PlanView";
 import { CategoryStep } from "./CategoryStep";
 import { whatsappLink } from "@/lib/site";
-import { plannerConfigs, resolveOptions, type Answers, type Opt, type PlannerConfig, type Question } from "./configs";
+import { plannerLabels, plannerLoaders } from "./configs";
+import { resolveOptions, type Answers, type Opt, type PlannerConfig, type Question } from "./questions";
 
-/** "category", "other", "plan", or the id of a question step from the category's planner config. */
+/** "category", "loading", "other", "plan", or the id of a question step from the category's planner config. */
 type Step = string;
 
 const chip = (on: boolean) =>
@@ -223,8 +224,23 @@ export function PlanBuilder() {
   const params = useSearchParams();
   const initialCat = params.get("category") ?? "";
   const [category, setCategory] = useState(initialCat);
-  const config: PlannerConfig | undefined = plannerConfigs[category];
-  const [step, setStep] = useState<Step>(plannerConfigs[initialCat] ? plannerConfigs[initialCat].steps[0].id : initialCat ? "other" : "category");
+  // Each category's questions, playbook and engine are loaded only when it is chosen.
+  const [configs, setConfigs] = useState<Record<string, PlannerConfig>>({});
+  const config: PlannerConfig | undefined = configs[category];
+  const [step, setStep] = useState<Step>(plannerLoaders[initialCat] ? "loading" : initialCat ? "other" : "category");
+  useEffect(() => {
+    const load = plannerLoaders[category];
+    if (!load || configs[category]) return;
+    let current = true;
+    load().then((c) => {
+      if (!current) return;
+      setConfigs((prev) => ({ ...prev, [category]: c }));
+      setStep((s) => (s === "loading" ? c.steps[0].id : s));
+    });
+    return () => {
+      current = false;
+    };
+  }, [category, configs]);
   const [answers, setAnswers] = useState<Record<string, Answers>>({});
   const a: Answers = config ? (answers[config.slug] ?? config.initial) : {};
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -255,14 +271,24 @@ export function PlanBuilder() {
       <CategoryStep
         key="category"
         className={moved ? "step-enter" : ""}
-        onPick={(slug, live) => { setCategory(slug); go(slug && live && plannerConfigs[slug] ? plannerConfigs[slug].steps[0].id : "other"); }}
+        onPick={(slug, live) => { setCategory(slug); go(slug && live && plannerLoaders[slug] ? (configs[slug]?.steps[0].id ?? "loading") : "other"); }}
       />
+    );
+
+  // ---------- Step: loading the chosen category's questions ----------
+  if (step === "loading" || (plannerLoaders[category] && !config && step !== "other"))
+    return (
+      <div key="loading" role="status" aria-live="polite" className="min-h-[60vh]">
+        <div className="mb-8 h-1.5 rounded-full bg-line" />
+        <p className="text-sm font-semibold text-gold-700">{plannerLabels[category] ?? "Planner"}</p>
+        <p className="mt-3 font-display text-3xl tracking-tight text-muted">Loading the questions…</p>
+      </div>
     );
 
   // ---------- Step: other categories ----------
   if (step === "other" || !config) {
     const c = categoryBySlug[category];
-    const live = Object.values(plannerConfigs).map((p) => p.label.toLowerCase());
+    const live = Object.values(plannerLabels).map((l) => l.toLowerCase());
     return (
       <div key="other" className={`space-y-10 ${moved ? "step-enter" : ""}`}>
         <button type="button" onClick={() => go("category")} className="text-sm font-semibold text-gold-700">← Change category</button>

@@ -1,5 +1,5 @@
 import type { PlatformId } from "@/data/platforms";
-import { ACCENT, icon, type IconComponent, type IconProps } from "./Icon";
+import { ACCENT, icon, Svg, type IconComponent, type IconProps } from "./Icon";
 
 /*
  * Simple line glyphs that hint at each platform without copying its trademarked logo.
@@ -75,7 +75,7 @@ export const PinterestIcon = icon(
   </>,
 );
 
-export const platformIcons: Record<PlatformId, IconComponent> = {
+export const platformIcons: Record<PlatformId, IconComponent & { draw: React.ReactNode }> = {
   instagram: InstagramIcon,
   facebook: FacebookIcon,
   whatsapp: WhatsAppIcon,
@@ -88,7 +88,27 @@ export const platformIcons: Record<PlatformId, IconComponent> = {
 };
 
 /** Icon for a platform id. */
+/**
+ * A platform glyph. Pages that repeat platform icons many times (plans, matrices) draw them once in
+ * <PlatformSprite /> and reference them here, which keeps the HTML and the hydration work small.
+ */
 export function PlatformIcon({ id, ...props }: { id: PlatformId } & IconProps) {
-  const Icon = platformIcons[id];
-  return <Icon {...props} />;
+  return (
+    <Svg {...props}>
+      <use href={`#oz-p-${id}`} />
+    </Svg>
+  );
+}
+
+/** Hidden sprite with every platform glyph; rendered once by the site layout. */
+export function PlatformSprite() {
+  return (
+    <svg width="0" height="0" aria-hidden focusable="false" className="absolute" style={{ position: "absolute" }}>
+      {(Object.keys(platformIcons) as PlatformId[]).map((id) => (
+        <symbol key={id} id={`oz-p-${id}`} viewBox="0 0 24 24">
+          {platformIcons[id].draw}
+        </symbol>
+      ))}
+    </svg>
+  );
 }

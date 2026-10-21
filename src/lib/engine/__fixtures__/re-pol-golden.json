@@ -1,0 +1,15 @@
+{
+  "real-estate:base": "0000633a72db8fdc817e522e2309949c32f9c92c4b1478c09e2a087a3c58f279",
+  "real-estate:premium": "1df7b6d5110a13321591fb87f408f3d5cb1a4d9081fe4eea1abc2afb3bde19d2",
+  "real-estate:starter": "b7910aae674de4324dc1f2d7793cfe0f64fd9b2fa59efa3f81dc79b1518afb4e",
+  "real-estate:ready": "e156dd4df6ba5bb875d0860682db9674593cb644cf06fe9c1d4a3be37311697a",
+  "real-estate:broker": "9e3a424803046cf20a7f6759840cfad918268360e9a6ad792fe56d722d8bf534",
+  "real-estate:noRera": "851057628ab70bb60c9db4750d1d3ddba7c60037f391c8f8c088fc889929ef4b",
+  "real-estate:minimal": "8af6e03aae3ac5684b45f93a4080ec10d301249367c7c69c980210412936579d",
+  "political:base": "d2fcdb542bba779265a2ba18d9a6d00ad5a594dc799bdb5b1d5ca9fc6b62e568",
+  "political:reminder": "5ef5ca3d275c45b1f4d9626e57e55411dbfb31cc14689f4fb820f4f8f19524cc",
+  "political:noElection": "fc89497f217c7b04b217ae6c19e38b55ce890c983cd6dbe82c4ec7ee7092f240",
+  "political:earlyPoll": "f0c3ebb33200d1426abc36d04677becf1db93a9c3a3585d025fa12faedcfa904",
+  "political:campaign": "8156135ec51f43c77c281de8980a111583fc60568d68469521921c152ff255a5",
+  "political:minimal": "a718d56745ea79e725849a32d74e9d9947e5b57dec19284b0a093a978ce216be"
+}

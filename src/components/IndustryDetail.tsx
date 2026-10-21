@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { categoryBySlug } from "@/data/categories";
 import type { Plan, Playbook } from "@/lib/engine/types";
-import { DayCard } from "@/components/PlanBits";
+import { DayCard, showcaseDays } from "@/components/PlanBits";
 import { Arrow, ButtonLink, Container, Eyebrow } from "@/components/ui";
 import { IndustryHeader } from "@/components/IndustryHeader";
 import { FitStrip } from "@/components/infographics/FitMatrix";
@@ -37,12 +37,12 @@ export function IndustryDetail(props: {
   const { slug, playbook, sample, faqs } = props;
   const cat = categoryBySlug[slug];
   const path = `/industries/${slug}`;
-  const week = sample.days.slice(7, 14);
+  const week = showcaseDays(sample.days);
   return (
     <>
       <IndustryHeader slug={slug} eyebrow={`Industries · ${props.crumb}`} title={props.heading} intro={props.intro} />
 
-      <section>
+      <section className="cv-auto">
         <Container className="grid gap-12 py-20 lg:grid-cols-2">
           <div>
             <Eyebrow>Who you are talking to</Eyebrow>
@@ -66,7 +66,7 @@ export function IndustryDetail(props: {
         </Container>
       </section>
 
-      <section className="border-y border-line bg-cream/50">
+      <section className="cv-auto border-y border-line bg-cream/50">
         <Container className="py-20">
           <Eyebrow>A week from a sample plan</Eyebrow>
           <h2 className="max-w-3xl font-display text-4xl tracking-tight">{props.detailHeading}</h2>
@@ -75,14 +75,14 @@ export function IndustryDetail(props: {
             <p className="mb-4 font-display text-xl">The whole month at a glance</p>
             <PlanTimeline plan={sample} caption={props.sampleLabel} />
           </div>
-          <p className="mb-4 mt-12 font-display text-2xl">Week 2 in detail</p>
+          <p className="mb-4 mt-12 font-display text-2xl">Three days from week 2, in detail</p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {week.map((d) => <DayCard key={d.day} day={d} />)}
           </div>
         </Container>
       </section>
 
-      <section>
+      <section className="cv-auto">
         <Container className="grid gap-12 py-20 lg:grid-cols-2">
           <div>
             <Eyebrow>Platforms for {props.crumb.toLowerCase()}</Eyebrow>
@@ -100,7 +100,7 @@ export function IndustryDetail(props: {
         </Container>
       </section>
 
-      <section className="border-t border-line">
+      <section className="cv-auto border-t border-line">
         <Container className="grid gap-10 py-20 lg:grid-cols-[0.8fr_1.2fr]">
           <h2 className="font-display text-4xl tracking-tight">{props.faqHeading}</h2>
           <div className="divide-y divide-line border-y border-line">
@@ -114,7 +114,7 @@ export function IndustryDetail(props: {
         </Container>
       </section>
 
-      <section className="bg-ink text-paper">
+      <section className="cv-auto bg-ink text-paper">
         <Container className="flex flex-col items-start gap-8 py-20 md:flex-row md:items-center md:justify-between">
           <h2 className="max-w-2xl font-display text-4xl tracking-tight">{props.cta}</h2>
           <ButtonLink href={`/plan-builder?category=${slug}`} variant="gold">{props.ctaLabel} <Arrow /></ButtonLink>

@@ -4,7 +4,7 @@ import { categories } from "@/data/categories";
 import { platforms } from "@/data/platforms";
 import { schoolPlaybook } from "@/data/playbooks/school";
 import { packages } from "@/lib/engine/school-engine";
-import { samplePlan } from "@/lib/sample";
+import { samplePlan } from "@/lib/samples/school";
 import { FitMatrix, FitStrip } from "./FitMatrix";
 import { PackageCompare } from "./PackageCompare";
 import { PillarMix } from "./PillarMix";

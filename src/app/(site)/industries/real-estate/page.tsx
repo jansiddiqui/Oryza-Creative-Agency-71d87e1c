@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buyingFestivals, realEstatePlaybook } from "@/data/playbooks/real-estate";
-import { sampleRealEstatePlan } from "@/lib/sample";
+import { sampleRealEstatePlan } from "@/lib/samples/real-estate";
 import { IndustryDetail } from "@/components/IndustryDetail";
 import { ogImageUrl } from "@/lib/images/live";
 import { slotById } from "@/data/image-slots";

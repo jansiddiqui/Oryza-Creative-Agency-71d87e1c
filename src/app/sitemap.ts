@@ -12,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ["/industries/doctors", 0.8],
     ["/industries/real-estate", 0.8],
     ["/industries/political-leaders", 0.8],
+    ["/industries/restaurants-cafes", 0.8],
+    ["/industries/coaching-institutes", 0.8],
     ["/platforms", 0.7],
     ["/how-it-works", 0.6],
     ["/contact", 0.6],
