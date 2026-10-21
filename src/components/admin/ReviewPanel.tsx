@@ -7,6 +7,7 @@ import { REVIEW_CHECKLIST } from "@/lib/image-prompts";
 import { focalCrop } from "@/lib/image-crop";
 import type { Focal } from "@/lib/images/types";
 import { approveAction, deleteVersionAction, setFocalAction } from "@/app/admin/(panel)/images/actions";
+import { useConfirm } from "./shell/Confirm";
 
 const aspectName = (a: AspectSpec) =>
   a.id === "og" ? "Share image 1200×630" : a.id === "4x5" ? "Phones 4:5" : a.id === "4x3" ? "Card 4:3" : "Desktop 16:9";
@@ -55,6 +56,7 @@ export function ReviewPanel({
 }) {
   const slot = slotById[slotId];
   const router = useRouter();
+  const confirm = useConfirm();
   const box = useRef<HTMLDivElement>(null);
   const [focal, setFocal] = useState(initialFocal);
   const [dragging, setDragging] = useState(false);
@@ -171,7 +173,7 @@ export function ReviewPanel({
           type="button"
           disabled={busy !== ""}
           onClick={async () => {
-            if (!confirm("Delete this upload? It has not been published.")) return;
+            if (!(await confirm({ title: "Delete this upload?", body: "It has not been published. The file is removed for good.", action: "Delete upload", danger: true }))) return;
             setBusy("delete");
             const res = await deleteVersionAction(id, slotId);
             setBusy("");

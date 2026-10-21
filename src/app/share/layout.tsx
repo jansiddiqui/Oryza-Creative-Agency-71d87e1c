@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default function ShareLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-paper text-ink">
+    <div className="admin-root min-h-dvh bg-paper text-ink">
       <header className="border-b border-line bg-ink px-4 py-3 text-paper print:border-0 print:bg-paper print:text-ink sm:px-8">
         <p className="mx-auto flex max-w-4xl items-center gap-2.5">
           {/* A plain image keeps these pages off the website's own image code. */}

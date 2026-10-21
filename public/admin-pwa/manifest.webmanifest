@@ -1,0 +1,21 @@
+{
+  "name": "Oryza admin",
+  "short_name": "Oryza",
+  "description": "Oryza team workspace: today's tasks, calendar, clients and leads.",
+  "id": "/admin/",
+  "start_url": "/admin/today",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#f6f4ef",
+  "icons": [
+    { "src": "/admin-pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/admin-pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/admin-pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Today", "url": "/admin/today" },
+    { "name": "Calendar", "url": "/admin/calendar" },
+    { "name": "Leads", "url": "/admin/leads" }
+  ]
+}

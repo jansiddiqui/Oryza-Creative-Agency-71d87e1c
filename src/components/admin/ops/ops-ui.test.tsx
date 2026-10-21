@@ -46,12 +46,12 @@ describe("master calendar", () => {
   it("month view: overdue in red, today highlighted, shoot markers, client colours", () => {
     const html = renderToStaticMarkup(<CalendarBoard view="month" filters={{}} {...props} />);
     expect(html).toContain("November 2026");
-    expect(html).toMatch(/Sunrise Clinic: Meet our doctors, Reel, overdue/);
-    expect(html).not.toMatch(/OPD timings, Reel, overdue/);
-    expect(html).toContain("10 · Today");
+    expect(html).toMatch(/Sunrise Clinic: Meet our doctors, Reel, Planned, overdue/);
+    expect(html).not.toMatch(/OPD timings, Reel, [^"]*overdue/);
+    expect(html).toContain('>10<span class="sr-only"> · Today</span>');
     expect(html).toContain("Shoot · Green Valley School");
     expect(html).toContain("border-left-color:#2f6b4f");
-    expect(html).toContain(`title="Instagram"`);
+    expect(html).toContain(`href="/admin/items/i1"`);
   });
 
   it("filters by client and format", () => {
@@ -69,11 +69,14 @@ describe("Today view", () => {
     const html = renderToStaticMarkup(
       <TodayBoard tasks={tasks} items={[item({ id: "i1", date: "2026-11-10", title: "Meet our doctors" })]} shoots={[{ ...shoot, date: "2026-11-10" }]} clients={clients} team={[]} me="me@oryza.test" today="2026-11-10" initialMine={false} />,
     );
-    for (const s of ["Overdue", "Due today", "Next 3 days", "Publishing today", "Shoots today"]) expect(html).toContain(s);
+    for (const s of ["Overdue", "Due today", "Awaiting client", "Next 3 days", "Publishing today", "Shoots today"]) expect(html).toContain(s);
     expect(html).toContain("1 overdue");
     expect(html).toMatch(/Counts per client/);
     expect(html).toContain("Meet our doctors");
-    expect(html).toContain("Shoot day 1");
+    // The shoot today links to its page; one-tap task actions are there.
+    expect(html).toContain('href="/admin/shoots/s1"');
+    expect(html).toContain("Mark done: Edit");
+    for (const s of [">Start<", ">Blocked<"]) expect(html).toContain(s);
   });
 });
 

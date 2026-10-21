@@ -5,6 +5,7 @@ import { adminAction } from "@/lib/admin/action";
 import { audit } from "@/lib/admin/audit";
 import { saveRules, saveTeamMember, saveWorkingDays, type TeamMember } from "@/lib/admin/ops-data";
 import { saveCapacity, saveEstimates } from "@/lib/admin/team-data";
+import { saveOfflineApproval } from "@/lib/admin/board-data";
 import { TEAM_ROLES, type DeadlineRule } from "@/lib/ops/types";
 
 const ROLE_IDS = TEAM_ROLES.map((r) => r.id as string);
@@ -67,6 +68,15 @@ export async function saveWorkloadSettingsAction(estimates: Record<string, numbe
     await saveEstimates(clean);
     await saveCapacity(cap, admin.email);
     await audit(admin.email, "estimates.update", "task_estimates", { steps: Object.keys(clean).length, capacity: cap });
+    revalidatePath("/admin", "layout");
+  }, "owner");
+}
+
+/** Owner only: allow team members to record "Approved by the client via WhatsApp/call" (with a note). */
+export async function saveOfflineApprovalAction(enabled: boolean) {
+  return adminAction(async (admin) => {
+    await saveOfflineApproval(Boolean(enabled), admin.email);
+    await audit(admin.email, "settings.update", "allow_offline_approval", { enabled: Boolean(enabled) });
     revalidatePath("/admin", "layout");
   }, "owner");
 }

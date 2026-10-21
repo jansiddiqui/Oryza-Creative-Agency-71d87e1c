@@ -37,3 +37,25 @@ export function groupToday(
   const perClient = [...counts.values()].sort((a, b) => b.overdue - a.overdue || b.today - a.today || a.clientId.localeCompare(b.clientId));
   return { overdue, dueToday, next3, publishing, shoots: todaysShoots, perClient };
 }
+
+export type TodayFilter = "overdue" | "today" | "next" | "client" | "shoots" | "leads";
+
+/** Tasks grouped by their post, posts ordered by their most urgent task (then by publish date). */
+export function groupByItem<T extends Pick<TaskRow, "itemId" | "due" | "time">>(tasks: T[], items: Pick<ItemRow, "id" | "date">[]): { itemId: string; tasks: T[] }[] {
+  const date = new Map(items.map((x) => [x.id, x.date]));
+  const by = new Map<string, T[]>();
+  for (const t of tasks) by.set(t.itemId, [...(by.get(t.itemId) ?? []), t]);
+  const first = (ts: T[]) => ts.reduce((m, t) => (t.due < m ? t.due : m), "9999-12-31");
+  return [...by.entries()]
+    .map(([itemId, ts]) => ({ itemId, tasks: ts.sort((a, b) => a.due.localeCompare(b.due) || a.time.localeCompare(b.time)) }))
+    .sort((a, b) => first(a.tasks).localeCompare(first(b.tasks)) || (date.get(a.itemId) ?? "").localeCompare(date.get(b.itemId) ?? ""));
+}
+
+/** The tasks a Today filter shows. "client" = approval tasks waiting for the client. */
+export function tasksForFilter(g: TodayGroups, f: TodayFilter): TaskRow[] {
+  if (f === "overdue") return g.overdue;
+  if (f === "today") return g.dueToday;
+  if (f === "next") return g.next3;
+  if (f === "client") return [...g.overdue, ...g.dueToday, ...g.next3].filter((t) => t.step === "client_approval" && t.status === "in_progress");
+  return [];
+}

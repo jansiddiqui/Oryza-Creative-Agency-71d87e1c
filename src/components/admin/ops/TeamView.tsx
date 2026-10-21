@@ -8,6 +8,8 @@ import type { TeamMember } from "@/lib/admin/ops-data";
 import type { DayLoad, Leave } from "@/lib/ops/team";
 import { Notice } from "../AdminShell";
 import { btn, btnGhost, btnSmall, field, fmtDay, Section } from "./ui";
+import { useConfirm } from "../shell/Confirm";
+import { useToast } from "../shell/Toasts";
 
 export interface WorkloadRow {
   email: string;
@@ -23,6 +25,8 @@ const label = "block text-[12px] font-semibold";
 /** Workload per person per day (tasks and estimated hours), leave dates and bulk reassignment. */
 export function TeamView({ week, prev, next, today, rows, team, leave }: { week: string[]; prev: string; next: string; today: string; rows: WorkloadRow[]; team: TeamMember[]; leave: Leave[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [msg, setMsg] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [lv, setLv] = useState({ email: team[0]?.email ?? "", start: today, end: today, note: "", to: "" });
   const [ra, setRa] = useState({ from: team[0]?.email ?? "", to: "", start: "", end: "" });
@@ -112,7 +116,12 @@ export function TeamView({ week, prev, next, today, rows, team, leave }: { week:
               <li key={l.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-[14px]">
                 <span className="font-semibold">{name(l.email)}</span>
                 <span className="text-muted">{fmtDay(l.start)}{l.end !== l.start && ` – ${fmtDay(l.end)}`}{l.note && ` · ${l.note}`}</span>
-                <button type="button" className={`${btnSmall} ml-auto`} onClick={async () => window.confirm("Remove this leave?") && done(await removeLeaveAction(l.id!, l.email), "Leave removed.")}>Remove</button>
+                <button type="button" className={`${btnSmall} ml-auto`} onClick={async () => {
+                  const res = await removeLeaveAction(l.id!, l.email);
+                  if (!res.ok) return done(res, "");
+                  toast.show({ message: `Leave removed for ${name(l.email)}`, undo: async () => { const u = await addLeaveAction(l.email, l.start, l.end, l.note ?? ""); router.refresh(); return u.ok ? { ok: true } : { ok: false, error: u.error }; } });
+                  router.refresh();
+                }}>Remove</button>
               </li>
             )) : <li className="text-[14px] text-muted">No upcoming leave.</li>}
           </ul>
@@ -123,7 +132,7 @@ export function TeamView({ week, prev, next, today, rows, team, leave }: { week:
             className="grid gap-3 rounded-2xl border border-line bg-paper p-4 sm:grid-cols-2"
             onSubmit={async (e) => {
               e.preventDefault();
-              if (!window.confirm(`Move ${ra.start && ra.end ? "open tasks due in those dates" : "all open tasks"} from ${name(ra.from)} to ${name(ra.to)}?`)) return;
+              if (!(await confirm({ title: `Reassign ${name(ra.from)}'s work to ${name(ra.to)}?`, body: `${ra.start && ra.end ? "Open tasks due in those dates" : "All open tasks"} and planned shoots in the same dates move to ${name(ra.to)}. Finished work keeps its name.`, action: "Reassign" }))) return;
               const res = await reassignAction(ra.from, ra.to, ra.start || undefined, ra.end || undefined);
               done(res, res.ok ? `${res.data.tasks} task(s) and ${res.data.shoots} planned shoot(s) moved to ${name(ra.to)}.` : "");
             }}

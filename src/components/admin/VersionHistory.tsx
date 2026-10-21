@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import type { VersionView } from "@/lib/admin/images-data";
 import { deleteVersionAction, removeLiveAction, rollbackAction } from "@/app/admin/(panel)/images/actions";
 import { StatusBadge, fmtWhen, sourceLabel } from "./AdminShell";
+import { useConfirm } from "./shell/Confirm";
 
 /** All versions of a slot: restore an earlier one in one click, take the live one off, or delete old ones. */
 export function VersionHistory({ slotId, versions }: { slotId: string; versions: VersionView[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
 
   async function run(key: string, fn: () => Promise<{ ok: boolean; error?: string }>, confirmText?: string) {
-    if (confirmText && !confirm(confirmText)) return;
+    if (confirmText && !(await confirm({ title: confirmText, action: "Continue", danger: /delete|remove/i.test(confirmText) }))) return;
     setError("");
     setBusy(key);
     const res = await fn();

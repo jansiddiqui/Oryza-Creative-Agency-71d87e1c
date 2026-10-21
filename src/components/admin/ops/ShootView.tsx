@@ -9,6 +9,7 @@ import type { ShotRow } from "@/lib/admin/shoots-data";
 import type { ItemRow, ShootRow } from "@/lib/ops/types";
 import { Notice } from "../AdminShell";
 import { btn, btnGhost, field, fmtDay, formatLabel, PlatformGlyph, StageBadge } from "./ui";
+import { useConfirm } from "../shell/Confirm";
 
 const label = "block text-[12px] font-semibold";
 
@@ -59,6 +60,7 @@ export function ShotList({ shots, fed }: { shots: ShotRow[]; fed: Pick<ItemRow, 
 /** The shoot-day planner: details, time slot, shooter, merged shot list, people/props, consent, and moving the day. */
 export function ShootView({ shoot, clientName, clientId, shots, fed, consent, team }: { shoot: ShootRow; clientName: string; clientId: string; shots: ShotRow[]; fed: ItemRow[]; consent: string[]; team: TeamMember[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [d, setD] = useState({ location: shoot.location, startTime: shoot.startTime, endTime: shoot.endTime, shooter: shoot.shooter ?? "", props: shoot.props, people: shoot.people, notes: shoot.notes, status: shoot.status as string });
   const [msg, setMsg] = useState<{ tone: "ok" | "error" | "info"; text: string } | null>(null);
   const [moveTo, setMoveTo] = useState(shoot.date);
@@ -162,7 +164,7 @@ export function ShootView({ shoot, clientName, clientId, shots, fed, consent, te
               type="button"
               className={btn}
               onClick={async () => {
-                if (!window.confirm(`Move the shoot to ${fmtDay(moveTo)}${preview.length ? ` and reschedule ${preview.length} task(s)` : ""}?`)) return;
+                if (!(await confirm({ title: `Move the shoot to ${fmtDay(moveTo)}?`, body: preview.length ? `${preview.length} task(s) will be rescheduled to match.` : "No open tasks change.", action: "Move shoot" }))) return;
                 const res = await moveShootAction(shoot.id, moveTo);
                 if (!res.ok) return setMsg({ tone: "error", text: res.error });
                 setMsg({ tone: "ok", text: `Shoot moved to ${fmtDay(moveTo)}. ${res.data.changed} task(s) rescheduled.` });

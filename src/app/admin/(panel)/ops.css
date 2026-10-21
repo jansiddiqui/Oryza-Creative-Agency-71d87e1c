@@ -1,7 +1,6 @@
 /*
- * Utilities for the admin panel, loaded only by its layout. The public stylesheet (app/globals.css) skips the
- * client operations folders (Today, Calendar, Clients, Settings), so public CSS is unaffected by them. This file
- * covers every admin file, so on admin pages each utility comes from here in Tailwind's correct order.
+ * The admin stylesheet (admin pages and client-link pages only). The public stylesheet (app/globals.css) does not
+ * scan admin code, so nothing here can change a public file. Tokens follow docs/admin-ux-audit.md §3.
  */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
@@ -23,10 +22,65 @@
   --color-gold-500: #b9811a;
   --color-gold-300: #e8b84a;
   --color-gold-100: #f7e8c4;
+
+  /* Admin work surfaces and text (contrast ratios in docs/admin-ux-audit.md §3.1). */
+  --color-canvas: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-surface-2: #efede6;
+  --color-edge: #e3dfd5;
+  --color-edge-strong: #8e968f;
+  --color-text-2: #3b4743;
+  --color-placeholder: #6b7471;
+  --color-sidebar: #13201c;
+  --color-sidebar-text: #c9ccc6;
+
+  /* Status colours: text / background pairs, all ≥ 5.6:1. */
+  --color-ok: #1e6b45;
+  --color-ok-bg: #e4f3ea;
+  --color-warn: #7a4e00;
+  --color-warn-bg: #fbefd3;
+  --color-bad: #a8261b;
+  --color-bad-bg: #fce9e7;
+  --color-info: #1f5a9e;
+  --color-info-bg: #e6eef9;
+  --color-violet: #5b3f96;
+  --color-violet-bg: #eee8f8;
+  --color-neutral: #4a5450;
+  --color-neutral-bg: #eeece6;
+
+  --shadow-float: 0 8px 24px rgb(19 32 28 / 0.14);
+  --shadow-modal: 0 24px 64px rgb(19 32 28 / 0.24);
+  --animate-rise: rise 0.2s ease-out;
+  @keyframes rise {
+    from { transform: translateY(8px); opacity: 0; }
+  }
+  --animate-shimmer: shimmer 1.4s ease infinite;
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+  }
 }
 
 /* Fonts come from next/font (src/app/fonts.ts), which sets these variables on <html>. */
 @theme inline {
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Admin-wide rules that keep every form accessible, even in markup that predates the design system. */
+@layer base {
+  .admin-root { background: var(--color-canvas); color: var(--color-ink); }
+  .admin-root :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea) {
+    border-color: var(--color-edge-strong) !important; /* 3:1 against white (WCAG 1.4.11) */
+    background-color: var(--color-surface);
+  }
+  .admin-root :is(input, textarea)::placeholder { color: var(--color-placeholder); }
+  .admin-root :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--color-ink); width: 18px; height: 18px; }
+  /* Phones: 16px text in fields so iOS never zooms the page on focus. */
+  @media (max-width: 767px) {
+    .admin-root :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea) { font-size: 16px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-root *, .admin-root *::before, .admin-root *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
 }

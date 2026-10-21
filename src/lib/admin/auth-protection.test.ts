@@ -116,6 +116,14 @@ describe("server-side admin check (every admin action and API)", () => {
     };
     walk(dir);
     const open = ["login/page.tsx", "auth/callback/route.ts", "auth/signout/route.ts"];
+    // Parallel-route placeholders inside (panel) render nothing (the panel layout already checks the admin).
+    const empty = ["(panel)/@drawer/[...rest]/page.tsx"];
+    for (const f of empty) {
+      const src = readFileSync(join(dir, f), "utf8");
+      expect(src).not.toMatch(/import /);
+      expect(src.replace(/\/\*\*.*\*\/\s*/, "").trim()).toMatch(/^export default function \w+\(\) \{\s*return null;\s*\}$/);
+    }
+    open.push(...empty);
     const unguarded = files
       .map((f) => relative(dir, f).split(sep).join("/"))
       .filter((f) => !open.includes(f))
@@ -209,7 +217,10 @@ describe("payments are owner-only", () => {
     expect(read("app/admin/(panel)/billing/page.tsx")).toMatch(/requireAdmin\("owner"\)/);
     const clientPage = read("app/admin/(panel)/clients/[id]/page.tsx");
     expect(clientPage).toMatch(/isOwner \? getBilling\(id\) : null/);
-    expect(clientPage).toMatch(/isOwner && billing &&/);
+    // The Billing tab only exists for owners, and its panel only renders for an owner with billing loaded.
+    expect(clientPage).toMatch(/\.\.\.\(isOwner \? \(\[\["billing", "Billing"\]\]/);
+    expect(clientPage).toMatch(/tab === "billing" && isOwner && billing\)/);
+    expect(clientPage).toMatch(/isOwner \? listInvoices\(id\) : \[\]/);
   });
 
   it("an editor calling a billing action gets 403 and nothing runs", async () => {

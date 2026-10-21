@@ -6,6 +6,7 @@ import { deleteInvoiceAction, saveBillingAction, saveInvoiceAction } from "@/app
 import { inr, invoiceState, PAY_MODES, type Invoice } from "@/lib/ops/billing";
 import { Notice } from "../AdminShell";
 import { btn, btnSmall, field, fmtDay } from "./ui";
+import { useConfirm } from "../shell/Confirm";
 
 const label = "block text-[12px] font-semibold";
 const tone = { due: "bg-gold-100 text-gold-700", paid: "bg-ink text-paper", overdue: "bg-red-50 text-red-900 ring-1 ring-red-800/40" } as const;
@@ -19,6 +20,7 @@ type Draft = { id?: string; number: string; issuedOn: string; dueOn: string; amo
 /** Owner only: fees and invoice records for one client (tracking only — no payments are taken here). */
 export function BillingPanel({ clientId, monthlyFee, optimizationFee, invoices, today, nextNumber }: { clientId: string; monthlyFee: number | null; optimizationFee: number | null; invoices: Invoice[]; today: string; nextNumber: string }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [fees, setFees] = useState({ monthly: monthlyFee?.toString() ?? "", optimization: optimizationFee?.toString() ?? "" });
   const blank: Draft = { number: nextNumber, issuedOn: today, dueOn: today, amount: monthlyFee?.toString() ?? "", status: "due", paidOn: "", mode: "", notes: "" };
   const [d, setD] = useState<Draft>(blank);
@@ -58,7 +60,7 @@ export function BillingPanel({ clientId, monthlyFee, optimizationFee, invoices, 
                 <td className="px-3 py-2">{i.paidOn ? `${fmtDay(i.paidOn)}${i.mode ? ` · ${PAY_MODES.find((m) => m.id === i.mode)?.label}` : ""}` : "—"}</td>
                 <td className="space-x-1 px-3 py-2 text-right">
                   <button type="button" className={btnSmall} onClick={() => setD({ id: i.id, number: i.number, issuedOn: i.issuedOn, dueOn: i.dueOn, amount: String(i.amount), status: i.status === "overdue" ? "due" : i.status, paidOn: i.paidOn ?? "", mode: i.mode, notes: i.notes })}>Edit</button>
-                  <button type="button" className={btnSmall} onClick={async () => window.confirm(`Delete invoice ${i.number}?`) && done(await deleteInvoiceAction(i.id, clientId), "Invoice deleted.")}>Delete</button>
+                  <button type="button" className={btnSmall} onClick={async () => (await confirm({ title: `Delete invoice ${i.number}?`, body: "The record is removed for good. To change it instead, use Edit.", action: "Delete invoice", danger: true })) && done(await deleteInvoiceAction(i.id, clientId), "Invoice deleted.")}>Delete</button>
                 </td>
               </tr>
             )) : <tr><td colSpan={7} className="px-3 py-3 text-muted">No invoices recorded.</td></tr>}

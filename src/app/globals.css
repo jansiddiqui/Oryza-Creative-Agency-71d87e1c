@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
-/* Client operations screens (admin only) get their own stylesheet, app/admin/(panel)/ops.css, so the public CSS never changes for them. */
-@source not "../components/admin/ops";
-@source not "./admin/*/clients";
-@source not "./admin/*/calendar";
-@source not "./admin/*/today";
-@source not "./admin/*/settings";
-@source not "./admin/*/team";
-@source not "./admin/*/shoots";
-@source not "./admin/*/items";
-@source not "./admin/*/approvals";
-@source not "./admin/*/reports";
-@source not "./admin/*/billing";
+/*
+ * The public CSS is built only from public code. Admin screens, client-link pages, docs and migrations have their own
+ * stylesheet (app/admin/(panel)/ops.css), so changing them never changes a public file. Their classes as of main are
+ * kept in a frozen snapshot so this file's output stays byte-identical.
+ */
+@source not "../components/admin";
+@source not "./admin";
 @source not "./share";
+@source not "../lib/admin";
+@source not "../lib/ops";
+@source not "../../docs";
+@source not "../../supabase";
+@source "../styles/public-css-sources.frozen.txt";
 
 /* Oryza brand tokens — derived from the gold "O" mark and charcoal-green wordmark */
 @theme {

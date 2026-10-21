@@ -9,6 +9,7 @@ import { mondayOf } from "@/lib/ops/calendar";
 import { fmtWhen, Notice } from "../AdminShell";
 import { CopyLink, WhatsAppShare } from "./ShareButtons";
 import { btn, btnGhost, btnSmall, fmtDay, formatLabel, PlatformGlyph } from "./ui";
+import { useConfirm } from "../shell/Confirm";
 
 export interface ApprovalItem {
   id: string;
@@ -134,6 +135,7 @@ export interface LinkSummary {
 /** Links sent to this client: status, answers, share again, revoke, and the 24-hour WhatsApp reminder. */
 export function ApprovalLinks({ links, clientName, clientPhone, clientEmail, now }: { links: LinkSummary[]; clientName: string; clientPhone: string; clientEmail: string; now: string }) {
   const router = useRouter();
+  const confirm = useConfirm();
   if (!links.length) return <p className="text-[14px] text-muted">No approval links yet.</p>;
   return (
     <ul className="space-y-3">
@@ -155,7 +157,7 @@ export function ApprovalLinks({ links, clientName, clientPhone, clientEmail, now
             )}
             {l.url && !l.revokedAt && !expired && <Share linkId={l.id} url={l.url} clientName={clientName} clientPhone={clientPhone} clientEmail={clientEmail} label={l.label} />}
             {!l.revokedAt && !expired && (
-              <button type="button" className={btnSmall} onClick={async () => { if (window.confirm("Switch this link off? The client will no longer be able to open it.")) { await revokeApprovalAction(l.id); router.refresh(); } }}>Revoke link</button>
+              <button type="button" className={btnSmall} onClick={async () => { if (await confirm({ title: "Revoke this link?", body: "The client will no longer be able to open it. You can send a new link any time.", action: "Revoke link", danger: true })) { await revokeApprovalAction(l.id); router.refresh(); } }}>Revoke link</button>
             )}
           </li>
         );

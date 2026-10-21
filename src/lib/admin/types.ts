@@ -45,7 +45,8 @@ export type AuditAction =
   | "report.update"
   | "report.share"
   | "billing.update"
-  | "invoice.update";
+  | "invoice.update"
+  | "client.approved_offline";
 
 export type LeadStatus = "new" | "contacted" | "converted" | "not_fit";
 

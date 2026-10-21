@@ -110,3 +110,15 @@ export async function openReportLink(token: string, now = new Date()): Promise<{
   if (!view.client) return { state: "invalid" };
   return { state: "ok", ...view, client: view.client };
 }
+
+/** Every client's report record for one month (for the Reports list). */
+export async function reportsForMonth(month: string): Promise<{ clientId: string; updatedAt: string; updatedBy: string; recorded: number }[]> {
+  const { data, error } = await db().from("monthly_reports").select("client_id, updated_at, updated_by, metrics").eq("month", month);
+  fail(error);
+  return ((data ?? []) as R[]).map((r) => ({
+    clientId: r.client_id as string,
+    updatedAt: r.updated_at as string,
+    updatedBy: r.updated_by as string,
+    recorded: Object.values((r.metrics as Record<string, Record<string, number>>) ?? {}).reduce((n, p) => n + Object.keys(p ?? {}).length, 0),
+  }));
+}
