@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { politicalPlaybook } from "@/data/playbooks/political";
-import { samplePoliticalPlan } from "@/lib/sample";
+import { samplePoliticalPlan } from "@/lib/samples/political";
 import { IndustryDetail } from "@/components/IndustryDetail";
 import { ogImageUrl } from "@/lib/images/live";
 import { slotById } from "@/data/image-slots";

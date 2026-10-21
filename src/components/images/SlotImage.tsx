@@ -1,8 +1,9 @@
 import { getImageProps, type ImageLoader } from "next/image";
+import { preconnect, preload } from "react-dom";
 import { slotById, type ImageSlot } from "@/data/image-slots";
 import { getLiveImage, pickVariant } from "@/lib/images/live";
 import type { LiveImage, ProcessedAspect } from "@/lib/images/types";
-import { publicImageUrl } from "@/lib/supabase/config";
+import { publicImageUrl, SUPABASE_URL } from "@/lib/supabase/config";
 import { BrandFallback } from "./BrandFallback";
 import { frameClass, slotAspects } from "./frame";
 
@@ -42,6 +43,16 @@ export function SlotPicture({
   const n = narrowA && narrow?.media ? srcSets(narrowA, slot.alt, sizes, priority) : null;
   const { style: _ignored, ...img } = w.webp;
   void _ignored;
+  if (priority) {
+    // Heroes are the LCP element: connect to storage and fetch the right crop before the <picture> is parsed.
+    if (SUPABASE_URL) preconnect(new URL(SUPABASE_URL).origin);
+    const hint = (set: { srcSet?: string; src: string }, media?: string) =>
+      preload(set.src, { as: "image", imageSrcSet: set.srcSet, imageSizes: sizes, fetchPriority: "high", type: "image/avif", ...(media && { media }) });
+    if (n && narrow?.media) {
+      hint(n.avif, narrow.media);
+      hint(w.avif, `not all and ${narrow.media}`);
+    } else hint(w.avif);
+  }
   return (
     <picture className={`block overflow-hidden ${frameClass(slot)} ${className}`}>
       {n && <source media={narrow!.media} type="image/avif" srcSet={n.avif.srcSet} sizes={sizes} />}

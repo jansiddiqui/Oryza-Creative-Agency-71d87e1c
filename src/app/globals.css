@@ -60,6 +60,28 @@ body {
   background: linear-gradient(90deg, transparent, #b9811a 20%, #e8b84a 50%, #b9811a 80%, transparent);
 }
 
+/* ---------- Plan items ----------
+ * Short class names for the rows every plan repeats dozens of times (sample plans on industry pages, the
+ * planner): same look as the utility classes they replace, much less HTML to download and hydrate.
+ */
+@layer components {
+  .pi { @apply flex gap-3 py-2.5; }
+  .pi-icon { @apply mt-0.5 text-ink-soft; }
+  .pi-body { @apply min-w-0 flex-1; }
+  .pi-meta { @apply text-[13px] leading-snug; }
+  .pi-badge { @apply ml-2 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-semibold text-gold-700; }
+  .pi-title { @apply mt-0.5 text-[15px] font-medium leading-snug text-ink; }
+  .pi-hook { @apply mt-0.5 text-[13px] leading-snug text-muted; }
+  .pi-by { @apply mt-1 text-[12px] text-muted; }
+  .pi-note { @apply mt-1 text-[12px] font-medium text-ink-soft; }
+}
+
+/* Long pages: sections below the fold skip style and layout work until they come near the viewport. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 /* ---------- Motion ----------
  * Everything here is opacity/transform only (no layout shift) and is switched off for prefers-reduced-motion.
  * Scroll reveals are armed by RevealObserver only for elements below the fold, so content is never hidden

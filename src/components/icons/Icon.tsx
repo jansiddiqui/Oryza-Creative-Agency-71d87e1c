@@ -44,7 +44,7 @@ export function Svg({ size = 24, accent, title, className = "", children }: Icon
 }
 
 /** Builds an icon component from its drawing. */
-export function icon(draw: ReactNode): IconComponent {
+export function icon(draw: ReactNode): IconComponent & { draw: ReactNode } {
   const C = (props: IconProps) => <Svg {...props}>{draw}</Svg>;
-  return C;
+  return Object.assign(C, { draw });
 }

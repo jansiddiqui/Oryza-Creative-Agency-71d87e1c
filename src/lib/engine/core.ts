@@ -13,16 +13,10 @@ import { platformById, type PlatformId } from "@/data/platforms";
 import { addDays, dayOf, fmtDate, monthName, weekdayName } from "./dates";
 import type { Plan, PlanDay, PlanItem, Playbook, Template } from "./types";
 
-export type PackageId = "starter" | "growth" | "premium";
+import { packages, type PackageId } from "./packages";
 
-export const packages: Record<
-  PackageId,
-  { name: string; reels: number; posts: number; storyDaysPerWeek: number; storiesPerDay: number; shoots: number }
-> = {
-  starter: { name: "Starter", reels: 8, posts: 8, storyDaysPerWeek: 4, storiesPerDay: 1, shoots: 1 },
-  growth: { name: "Growth", reels: 12, posts: 15, storyDaysPerWeek: 7, storiesPerDay: 2, shoots: 2 },
-  premium: { name: "Premium", reels: 16, posts: 18, storyDaysPerWeek: 7, storiesPerDay: 3, shoots: 3 },
-};
+export { packages };
+export type { PackageId };
 
 export const PLAN_DAYS = 30;
 const TIME = { reel: "8:30 pm", post: "1:30 pm", story: "Through the day" } as const;
@@ -387,7 +381,8 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
       time: TIME[t.format],
       pinnedReason: s.pinnedReason,
     };
-    if (t.note) item.note = fill(t.note, vars);
+    const note = t.note ? fill(t.note, vars) : "";
+    if (note) item.note = note;
     D(s.day).items.push(item);
   }
 
@@ -397,7 +392,8 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     if (D(d).items.some((x) => x.format === "story" && x.title === title)) return;
     const t = tpl(id);
     const item: PlanItem = { templateId: id, platform: "instagram", format: "story", title, hook, time: TIME.story, pinnedReason: reason, who: t.who };
-    if (t.note) item.note = fill(t.note, baseVars);
+    const note = t.note ? fill(t.note, baseVars) : "";
+    if (note) item.note = note;
     D(d).items.push(item);
   };
   const add: BuildContext<A>["add"] = (d, item) => {

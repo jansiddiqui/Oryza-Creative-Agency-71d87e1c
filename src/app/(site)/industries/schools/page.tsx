@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { schoolPlaybook } from "@/data/playbooks/school";
 import { categoryBySlug } from "@/data/categories";
-import { samplePlan } from "@/lib/sample";
-import { DayCard } from "@/components/PlanBits";
+import { samplePlan } from "@/lib/samples/school";
+import { DayCard, showcaseDays } from "@/components/PlanBits";
 import { Arrow, ButtonLink, Container, Eyebrow } from "@/components/ui";
 import { IndustryHeader } from "@/components/IndustryHeader";
 import { FitStrip } from "@/components/infographics/FitMatrix";
@@ -36,7 +36,7 @@ const faqs = [
 
 export default function Schools() {
   const cat = categoryBySlug["schools"];
-  const week = samplePlan.days.slice(7, 14);
+  const week = showcaseDays(samplePlan.days);
   return (
     <>
       <IndustryHeader
@@ -46,7 +46,7 @@ export default function Schools() {
         intro="Parents are choosing where their child will spend the next ten years. Your social media should answer one feeling: “my child will be safe, cared for and will grow here.”"
       />
 
-      <section>
+      <section className="cv-auto">
         <Container className="grid gap-12 py-20 lg:grid-cols-2">
           <div>
             <Eyebrow>Who you are talking to</Eyebrow>
@@ -70,7 +70,7 @@ export default function Schools() {
         </Container>
       </section>
 
-      <section className="border-y border-line bg-cream/50">
+      <section className="cv-auto border-y border-line bg-cream/50">
         <Container className="py-20">
           <Eyebrow>A week from a sample plan</Eyebrow>
           <h2 className="max-w-3xl font-display text-4xl tracking-tight">This is the level of detail every school gets.</h2>
@@ -82,14 +82,14 @@ export default function Schools() {
             <p className="mb-4 font-display text-xl">The whole month at a glance</p>
             <PlanTimeline plan={samplePlan} caption="Sample plan · fictional CBSE school in admission season." />
           </div>
-          <p className="mb-4 mt-12 font-display text-2xl">Week 2 in detail</p>
+          <p className="mb-4 mt-12 font-display text-2xl">Three days from week 2, in detail</p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {week.map((d) => <DayCard key={d.day} day={d} />)}
           </div>
         </Container>
       </section>
 
-      <section>
+      <section className="cv-auto">
         <Container className="grid gap-12 py-20 lg:grid-cols-2">
           <div>
             <Eyebrow>Platforms for schools</Eyebrow>
@@ -104,7 +104,7 @@ export default function Schools() {
         </Container>
       </section>
 
-      <section className="border-t border-line">
+      <section className="cv-auto border-t border-line">
         <Container className="grid gap-10 py-20 lg:grid-cols-[0.8fr_1.2fr]">
           <h2 className="font-display text-4xl tracking-tight">Schools ask us</h2>
           <div className="divide-y divide-line border-y border-line">
@@ -118,7 +118,7 @@ export default function Schools() {
         </Container>
       </section>
 
-      <section className="bg-ink text-paper">
+      <section className="cv-auto bg-ink text-paper">
         <Container className="flex flex-col items-start gap-8 py-20 md:flex-row md:items-center md:justify-between">
           <h2 className="max-w-2xl font-display text-4xl tracking-tight">Get your school’s 30-day plan in four minutes.</h2>
           <ButtonLink href="/plan-builder?category=schools" variant="gold">Start the school planner <Arrow /></ButtonLink>
