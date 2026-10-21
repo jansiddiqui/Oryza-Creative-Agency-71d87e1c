@@ -29,6 +29,8 @@ export interface Template {
   minDay?: number;
   /** Only placed by a pinned rule, never by free scheduling. */
   pinnedOnly?: boolean;
+  /** Shown with the item in the plan (e.g. "Doctor approves every medical fact"). */
+  note?: string;
 }
 
 export interface Playbook {
@@ -51,6 +53,8 @@ export interface PlanItem {
   pillar?: string;
   time: string;
   pinnedReason?: string;
+  /** Compliance or approval note carried from the template. */
+  note?: string;
 }
 
 export interface PlanDay {
@@ -76,4 +80,6 @@ export interface Plan {
   nextMonths: { month: string; themes: string[] }[];
   pkg: { id: string; name: string; summary: string };
   rules: string[];
+  /** Compliance notes for regulated categories (absent for others). */
+  compliance?: string[];
 }

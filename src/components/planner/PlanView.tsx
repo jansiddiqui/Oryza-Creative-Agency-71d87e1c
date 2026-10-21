@@ -4,7 +4,7 @@ import type { Plan } from "@/lib/engine/types";
 import { fmtDate } from "@/lib/engine/dates";
 import { DayCard } from "@/components/PlanBits";
 import { FitChip } from "@/components/ui";
-import { CameraIcon, PlatformIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, PlatformIcon } from "@/components/icons";
 import { PillarMix } from "@/components/infographics/PillarMix";
 import { PlanTimeline } from "@/components/infographics/PlanTimeline";
 import type { CSSProperties } from "react";
@@ -175,6 +175,12 @@ export function PlanView({ plan, unlocked, lockSlot }: { plan: Plan; unlocked: b
             </div>
             <p className="mt-6 text-[13px] text-muted">Content rules for your category: {plan.rules.join(" ")}</p>
           </Section>
+
+          {plan.compliance && (
+            <Section n={12} title="Compliance built into this plan">
+              <ul className="space-y-2 text-[15px] text-ink-soft">{plan.compliance.map((c) => <li key={c} className="flex gap-2.5"><CheckIcon size={18} className="mt-0.5 shrink-0 text-gold-700" />{c}</li>)}</ul>
+            </Section>
+          )}
         </>
       )}
     </div>

@@ -34,7 +34,7 @@ export const categories: Category[] = [
     name: "Hospitals & clinics",
     audience: "Patients and the families who decide for them",
     feeling: "I can trust these doctors with my family.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "core", "core", "core", "add", "skip", "skip"),
   },
   {
@@ -42,7 +42,7 @@ export const categories: Category[] = [
     name: "Doctors (personal brand)",
     audience: "Patients searching for a specialist they can trust",
     feeling: "This doctor explains things clearly and cares.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "add", "core", "core", "core", "add", "core", "skip", "skip"),
   },
   {
