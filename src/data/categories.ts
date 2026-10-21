@@ -98,7 +98,7 @@ export const categories: Category[] = [
     name: "B2B & manufacturers",
     audience: "Buyers, distributors and procurement teams",
     feeling: "A reliable partner with real capacity.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("add", "add", "core", "add", "core", "core", "core", "skip", "skip"),
   },
   {
@@ -106,7 +106,7 @@ export const categories: Category[] = [
     name: "Professionals (CA, lawyer, consultant)",
     audience: "Clients looking for expertise they can rely on",
     feeling: "This expert knows the subject and is approachable.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "add", "core", "add", "core", "add", "core", "add", "skip"),
   },
   {
@@ -114,7 +114,7 @@ export const categories: Category[] = [
     name: "Creators & personal brands",
     audience: "A niche community that follows a person, not a company",
     feeling: "This person gets me — I want to keep watching.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "add", "add", "core", "skip", "skip", "add", "add", "add"),
   },
   {

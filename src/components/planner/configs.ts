@@ -15,6 +15,9 @@ export const plannerLoaders: Record<string, () => Promise<PlannerConfig>> = {
   "retail-showrooms": () => import("./categories/retail-showrooms").then((m) => m.config),
   "gyms-salons": () => import("./categories/gyms-salons").then((m) => m.config),
   "interiors-fashion-jewellery": () => import("./categories/interiors-fashion-jewellery").then((m) => m.config),
+  "b2b-manufacturers": () => import("./categories/b2b-manufacturers").then((m) => m.config),
+  professionals: () => import("./categories/professionals").then((m) => m.config),
+  creators: () => import("./categories/creators").then((m) => m.config),
 };
 
 /** Short labels for the categories with a live planner (for copy that lists them). */
@@ -29,4 +32,7 @@ export const plannerLabels: Record<string, string> = {
   "retail-showrooms": "Retail & showrooms",
   "gyms-salons": "Gyms, salons & spas",
   "interiors-fashion-jewellery": "Interiors, fashion & jewellery",
+  "b2b-manufacturers": "B2B & manufacturers",
+  professionals: "Professionals",
+  creators: "Creators & personal brands",
 };
