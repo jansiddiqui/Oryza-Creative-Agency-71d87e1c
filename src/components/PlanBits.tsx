@@ -44,6 +44,7 @@ export function ItemRow({ item, compact }: { item: PlanItem; compact?: boolean }
             {item.cta && <>CTA: {item.cta}</>}
           </p>
         )}
+        {!compact && item.note && <p className="mt-1 text-[12px] font-medium text-ink-soft">Note: {item.note}</p>}
       </div>
     </li>
   );
