@@ -32,7 +32,7 @@ npm run build && npm start   # production
 | `src/components/icons/` | One SVG icon set (24px grid, 1.5px stroke, `currentColor`, optional gold `accent`): UI, platforms, industries, services, process |
 | `src/components/infographics/` | Fit matrix, process flow, 30-day timeline, pillar mix, package comparison — all drawn from real site data |
 | `src/components/motion/` | Scroll reveals (armed below the fold only), sticky-header state; all motion is CSS and off for reduced motion |
-| `src/data/image-slots.ts` | Every image position: page, subject, crops, alt text, `illustrative` vs `real-only` |
+| `src/data/image-slots.ts` | Every image position: page, subject, crops, alt text (scene briefs for prompts in `src/data/image-scenes.ts`) |
 | `src/components/images/SlotImage.tsx` | `<SlotImage slot="…" />`: live image from Supabase as AVIF/WebP `<picture>`, or the brand fallback |
 | `src/app/admin/`, `src/components/admin/`, `src/lib/admin/` | Admin panel (`/admin`): sign-in, Images, Leads, Users, Activity |
 | `src/lib/images/` | Image Manager: validation, sharp processing, approve/rollback service, live-image reader |
@@ -43,9 +43,9 @@ npm run build && npm start   # production
 | `docs/deploy.md` | Env vars, Resend DNS, go-live, post-launch checks, rollback |
 
 ## Images
-Managed in the browser at `/admin/images` — see `docs/admin-images.md`. AI-generated images are allowed **only** in
-`illustrative` slots, as decorative scenes; `real-only` slots (work, team, clients, results, office) take real photos
-or nothing. `npm run images:prompts` regenerates `docs/image-prompts.md` (all prompts in one file).
+Managed in the browser at `/admin/images` — see `docs/admin-images.md`. Every slot has a ready-to-copy prompt (main +
+alternative scene). AI-generated images are decorative scenes only — never shown as our office, team, clients or
+results — and a real photo can replace them at any time. `npm run images:prompts` regenerates `docs/image-prompts.md`.
 
 ## Adding a new category playbook
 1. Copy `src/data/playbooks/school.ts` and write the audiences, pillars, rules and 60+ templates.

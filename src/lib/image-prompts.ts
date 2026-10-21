@@ -4,7 +4,8 @@
  * opening, FORMAT, PURPOSE, SCENE, PEOPLE, COMPOSITION, CAMERA, LIGHT, COLOUR PALETTE AND GRADE,
  * REALISM DETAILS and DO NOT INCLUDE. Slot-specific scenes live in src/data/image-scenes.ts.
  *
- * `real-only` slots never get a prompt; share-image slots made from a page header use the header's image.
+ * Every slot shows a prompt: share-image slots made from a page header show the header's prompts
+ * (see slotPrompts). The `real-only` slot type remains as a safeguard, but no slot uses it.
  */
 import type { AspectSpec, ImageSlot } from "@/data/image-slots";
 import { sceneBriefs, type SceneBrief, type SceneVariant } from "@/data/image-scenes";
@@ -103,10 +104,23 @@ export function buildPrompt(slot: ImageSlot, variant: PromptVariant = "main"): s
   return b ? assemble(b, b[variant]) : null;
 }
 
+/**
+ * The prompts to show for a slot: its own, or — for a share image made from a page header — the header's,
+ * with `from` naming that header slot.
+ */
+export function slotPrompts(slot: ImageSlot, all: Record<string, ImageSlot>): { main: string; alt: string; from: string | null } | null {
+  const source = slot.deriveFrom ? all[slot.deriveFrom] : slot;
+  if (!source) return null;
+  const main = buildPrompt(source, "main");
+  const alt = buildPrompt(source, "alt");
+  return main && alt ? { main, alt, from: slot.deriveFrom ?? null } : null;
+}
+
 export const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
 
 /** Markdown for docs/image-prompts.md: every slot, its sizes and both prompts. */
 export function promptsMarkdown(slots: ImageSlot[]): string {
+  const byId = Object.fromEntries(slots.map((x) => [x.id, x]));
   const lines: string[] = [
     "# Image prompts",
     "",
@@ -116,9 +130,9 @@ export function promptsMarkdown(slots: ImageSlot[]): string {
     "",
     "Copy a prompt → paste into ChatGPT, Gemini or Midjourney → generate 3–4 versions → pick the most natural one → upload it in **/admin/images** (guide: `docs/admin-images.md`). Nothing needs to be added to the prompt.",
     "",
-    "- **Illustrative** slots may use AI-generated images as decorative or concept scenes only.",
-    "- **Real-only** slots (work, team, clients, results, our office) take a **real photo or nothing**. No prompt is given for them.",
-    "- Share images (OG) are made automatically from their page header.",
+    "- Every slot has a prompt and an alternative scene. AI-generated images are decorative or concept scenes only — never shown as Oryza's office, team, clients or results.",
+    "- A **real photo** can be uploaded to any slot at any time and replaces the AI image.",
+    "- Share images (OG) are made automatically from their page header; their section repeats the header's prompts in case you want your own.",
     "",
     "## Human review checklist (before approving)",
     "",
@@ -132,20 +146,15 @@ export function promptsMarkdown(slots: ImageSlot[]): string {
     lines.push(`### \`${s.id}\``, "");
     lines.push(`- **Page:** ${s.page}`);
     lines.push(`- **Purpose:** ${s.purpose}`);
-    lines.push(`- **Type:** ${s.type === "real-only" ? "**real-only** (real photo required)" : "illustrative"}`);
+    lines.push(`- **Type:** ${s.deriveFrom ? `share image, made from \`${s.deriveFrom}\`` : "illustrative (a real photo can replace it at any time)"}`);
     lines.push(`- **Crops:** ${s.aspects.map((a) => `${fmtRatio(a)} (${a.widths.join(", ")} px${a.media ? `, ${a.media}` : ""})`).join("; ")}`);
     lines.push(`- **Source needed:** at least ${size.width}×${size.height}px`);
     lines.push(`- **Placement:** ${s.placement}`);
     lines.push(`- **Alt text:** ${s.alt}`);
     lines.push("");
-    const main = buildPrompt(s, "main");
-    if (main) {
-      lines.push("**Prompt**", "", "```text", main, "```", "", "**Alternative scene**", "", "```text", buildPrompt(s, "alt")!, "```", "");
-    } else if (s.deriveFrom) {
-      lines.push(`> Made automatically from \`${s.deriveFrom}\` when that image is approved. Upload here only for a different share image.`, "");
-    } else {
-      lines.push(`> Real photo only — no AI prompt. Brief: ${s.subject}.`, "");
-    }
+    const p = slotPrompts(s, byId);
+    if (p?.from) lines.push(`> Made automatically from the header image \`${p.from}\` — you can also upload your own. The header's prompts:`, "");
+    if (p) lines.push("**Prompt**", "", "```text", p.main, "```", "", "**Alternative scene**", "", "```text", p.alt, "```", "");
   }
   return lines.join("\n");
 }

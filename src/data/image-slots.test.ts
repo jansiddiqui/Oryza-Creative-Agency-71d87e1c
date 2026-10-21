@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { categories } from "./categories";
 import { imageSlots, slotById } from "./image-slots";
-import { BRAND_HEX, buildPrompt, PROMPT_SECTIONS, promptsMarkdown, REVIEW_CHECKLIST, requiredSource, SHARED_NEGATIVES, sourceSize, wordCount } from "@/lib/image-prompts";
+import { BRAND_HEX, buildPrompt, PROMPT_SECTIONS, slotPrompts, promptsMarkdown, REVIEW_CHECKLIST, requiredSource, SHARED_NEGATIVES, sourceSize, wordCount } from "@/lib/image-prompts";
 import { sceneBriefs } from "./image-scenes";
 
 describe("image slot registry", () => {
@@ -19,8 +19,11 @@ describe("image slot registry", () => {
     for (const id of ["home-hero", "services-header", "platforms-header", "how-it-works-header", "contact-studio"]) expect(slotById[id]).toBeDefined();
   });
 
-  it("marks team/studio photos as real-only", () => {
-    expect(slotById["contact-studio"].type).toBe("real-only");
+  it("has no real-only slots, and nothing claims to show our office, studio, team or clients", () => {
+    expect(imageSlots.filter((x) => x.type === "real-only")).toEqual([]);
+    for (const x of imageSlots) {
+      for (const text of [x.purpose, x.subject, x.alt, x.placement]) expect(text, x.id).not.toMatch(/\b(our|oryza'?s?) (office|studio|team|clients?)\b|\bstudio\b/i);
+    }
   });
 
   it("gives every slot alt text, a placement and sane crops", () => {
@@ -46,11 +49,29 @@ describe("prompt generator", () => {
     for (const s of prompted) expect(buildPrompt(s, "alt")).not.toBe(buildPrompt(s, "main"));
   });
 
-  it("never writes a prompt for a real-only slot", () => {
-    for (const s of imageSlots.filter((x) => x.type === "real-only")) {
-      expect(buildPrompt(s, "main")).toBeNull();
-      expect(buildPrompt(s, "alt")).toBeNull();
+  it("every slot shows a main and an alternative prompt — share images show their header's", () => {
+    for (const x of imageSlots) {
+      const p = slotPrompts(x, slotById);
+      expect(p, x.id).not.toBeNull();
+      expect(p!.main).not.toBe(p!.alt);
+      if (x.deriveFrom) {
+        expect(p!.from).toBe(x.deriveFrom);
+        expect(p!.main).toBe(buildPrompt(slotById[x.deriveFrom], "main"));
+      } else expect(p!.from).toBeNull();
     }
+  });
+
+  it("the contact slot has its own calm scenes with no office, studio or team", () => {
+    for (const v of ["main", "alt"] as const) {
+      const p = buildPrompt(slotById["contact-studio"], v)!;
+      expect(p).toContain("Contact page");
+      expect(p).toMatch(/real company's office, studio or team/); // in DO NOT INCLUDE
+      expect(sceneBriefs["contact-studio"][v].people).toMatch(/^No people|^Nobody in the foreground/);
+    }
+  });
+
+  it("the real-only safeguard still refuses to write a prompt (no slot uses it)", () => {
+    expect(buildPrompt({ ...slotById["contact-studio"], type: "real-only" })).toBeNull();
   });
 
   it("does not write separate prompts for share images made from a page header", () => {
@@ -124,6 +145,8 @@ describe("prompt generator", () => {
     const md = promptsMarkdown(imageSlots);
     for (const c of REVIEW_CHECKLIST) expect(md).toContain(c.label);
     for (const s of imageSlots) expect(md).toContain(`\`${s.id}\``);
+    expect(md).not.toMatch(/real photo only|real-only/i);
+    expect(md.match(/Made automatically from the header image/g)?.length).toBe(imageSlots.filter((x) => x.deriveFrom).length);
     for (const { p } of all) expect(md).toContain(p!);
   });
 

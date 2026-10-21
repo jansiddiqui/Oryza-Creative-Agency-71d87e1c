@@ -26,7 +26,7 @@ export default function Contact() {
         <Container className="grid gap-14 py-20 lg:grid-cols-[1.3fr_0.7fr]">
           <LeadForm waHref={wa} />
           <aside className="space-y-6 rounded-2xl bg-cream/60 p-7">
-            {/* Real photo of the team/studio only — renders nothing until one is approved. */}
+            {/* Calm illustrative image (or a real photo) — renders nothing until one is approved. */}
             <SlotImage slot="contact-studio" sizes="(min-width: 1024px) 30vw, 100vw" className="rounded-xl" />
             {wa && <ButtonLink href={wa} external className="w-full">Chat on WhatsApp</ButtonLink>}
             <div className="flex gap-3 text-[15px]">
