@@ -7,9 +7,13 @@ import { healthDaysFor, specialities } from "@/data/medical";
 import type { PlatformId } from "@/data/platforms";
 import { doctorOptions } from "@/data/playbooks/doctor";
 import { hospitalOptions } from "@/data/playbooks/hospital";
+import { politicalOptions } from "@/data/playbooks/political";
+import { realEstateOptions } from "@/data/playbooks/real-estate";
 import { schoolOptions } from "@/data/playbooks/school";
 import { practiceOptions } from "@/lib/engine/categories/medical";
 import { generateDoctorPlan, generateHospitalPlan, type DoctorAnswers, type HospitalAnswers } from "@/lib/engine/medical-engine";
+import { generatePoliticalPlan, type PoliticalAnswers } from "@/lib/engine/political-engine";
+import { generateRealEstatePlan, type RealEstateAnswers } from "@/lib/engine/real-estate-engine";
 import { generateSchoolPlan, type SchoolAnswers } from "@/lib/engine/school-engine";
 import type { Plan } from "@/lib/engine/types";
 
@@ -33,10 +37,22 @@ export type Question =
   | (QBase & { kind: "choice"; name: string; options: Options })
   | (QBase & { kind: "multi"; options: Options; max?: number; /** The first pick is starred as the main one. */ star?: boolean })
   | (QBase & { kind: "events"; options: readonly Opt[]; defaultKind: string; withLabel?: string; max?: number })
-  | (QBase & { kind: "list"; itemLabel: string; placeholder?: string })
+  | (QBase & { kind: "list"; itemLabel: string; placeholder?: string; /** Lets the visitor add rows up to this many. */ max?: number })
+  | (QBase & { kind: "group"; itemLabel: string; fields: GroupField[]; empty: Record<string, string>; max?: number })
   | (QBase & { kind: "platforms" })
   | (QBase & { kind: "optimize" })
   | (QBase & { kind: "package" });
+
+/** One field inside a repeatable group (e.g. a project or a work-done fact). */
+export interface GroupField {
+  key: string;
+  label: string;
+  type: "text" | "date" | "choice";
+  options?: readonly Opt[];
+  placeholder?: string;
+  /** Wide fields span the full row. */
+  wide?: boolean;
+}
 
 export interface PlannerStep {
   id: string;
@@ -250,6 +266,175 @@ const doctor: PlannerConfig = {
   generate: (raw, startDate) => generateDoctorPlan({ ...withDates(raw as unknown as DoctorAnswers), startDate }),
 };
 
-export const plannerConfigs: Record<string, PlannerConfig> = { schools: school, "hospitals-clinics": hospital, doctors: doctor };
+const consent3 = (label: string, hint: string): Question => ({ kind: "choice", key: "consent", label, name: "Consent", hint, options: [{ id: "yes", label: "Yes, written" }, { id: "some", label: "Some" }, { id: "no", label: "No" }] });
+const cameraQ = (label: string): Question => ({ kind: "choice", key: "onCamera", label, name: "On camera", options: [{ id: "all", label: "Yes" }, { id: "some", label: "Short clips only" }, { id: "none", label: "No — designs and voice-over" }] });
+
+const emptyProject = { name: "", type: "apartments", location: "", stage: "uc", rera: "", units: "", price: "", possession: "", launch: "", booking: "", handover: "", sample: "no" };
+
+const realEstate: PlannerConfig = {
+  slug: "real-estate",
+  label: "Real estate",
+  nameKey: "name",
+  initial: {
+    name: "", city: "Kanpur", role: "builder", goals: ["visits"], projects: [{ ...emptyProject }], reraSite: "", agentRera: "",
+    amenities: [], visit: "", siteAccess: "yes", banks: "", distances: ["", ""], offer: "", onCamera: "some", events: [],
+    stage: "revive", consent: "no", shoot: "2", pkg: "growth", platforms: corePlatforms("real-estate"), optimize: [],
+  },
+  steps: [
+    {
+      id: "basics",
+      title: "About your business",
+      questions: [
+        { kind: "text", key: "name", label: "Company or brand name", required: true, half: true },
+        { kind: "text", key: "city", label: "City", half: true },
+        { kind: "choice", key: "role", label: "You are a", name: "Role", options: realEstateOptions.roles },
+        { kind: "multi", key: "goals", label: "What do you want in the next 3 months?", hint: "Pick one or more. The first one you pick is your main goal.", options: realEstateOptions.goals, star: true },
+      ],
+    },
+    {
+      id: "projects",
+      title: "Your projects and RERA",
+      questions: [
+        {
+          kind: "group", key: "projects", label: "Projects", itemLabel: "Project", max: 4, empty: emptyProject,
+          hint: "A project without a RERA number gets brand and educational content only — no selling or booking content. Type every detail exactly as you want it shown.",
+          fields: [
+            { key: "name", label: "Project name", type: "text" },
+            { key: "type", label: "Type", type: "choice", options: realEstateOptions.types },
+            { key: "location", label: "Location", type: "text" },
+            { key: "stage", label: "Stage", type: "choice", options: realEstateOptions.stages },
+            { key: "rera", label: "RERA registration number (exactly as issued)", type: "text", wide: true },
+            { key: "units", label: "Home types and sizes (optional)", type: "text", placeholder: "e.g. 2 and 3 BHK" },
+            { key: "price", label: "Price as you want it shown (optional)", type: "text", placeholder: "e.g. Starting from ₹45 lakh" },
+            { key: "possession", label: "Possession date as declared to RERA", type: "text", placeholder: "e.g. December 2028" },
+            { key: "sample", label: "Sample flat ready?", type: "choice", options: yesNo("Yes", "No") },
+            { key: "launch", label: "Launch date (if in the next 60 days)", type: "date" },
+            { key: "booking", label: "Bookings open (if in the next 60 days)", type: "date" },
+            { key: "handover", label: "Possession or handover starts (if in the next 60 days)", type: "date", wide: true },
+          ],
+        },
+        { kind: "text", key: "reraSite", label: "RERA website shown in posts", hint: "Exactly as on your registration certificate.", placeholder: "e.g. the UP RERA portal address" },
+        { kind: "text", key: "agentRera", label: "Your RERA agent registration number", hint: "Needed for listing posts — exactly as issued.", when: (a) => a.role === "broker" },
+      ],
+    },
+    {
+      id: "homes",
+      title: "Amenities, visits and location",
+      questions: [
+        { kind: "multi", key: "amenities", label: "Key amenities", hint: "Under-construction amenities are shown only as renders labelled “Artist's impression”.", options: realEstateOptions.amenities },
+        { kind: "text", key: "visit", label: "Site-visit days and timings", placeholder: "e.g. Sat–Sun, 10 am – 6 pm" },
+        { kind: "list", key: "distances", label: "Location advantages, with distances", itemLabel: "Location advantage", hint: "As you have measured them — we show them word for word.", placeholder: "e.g. Kanpur Central: 8 km", max: 5 },
+        { kind: "text", key: "banks", label: "Home-loan partner banks (optional)", hint: "Names exactly as you want them shown; we never mention interest rates." },
+        { kind: "text", key: "offer", label: "Festive offer (optional)", hint: "Only an offer you have approved, exactly as worded, with its terms. Leave empty and we never mention offers." },
+      ],
+    },
+    {
+      id: "events",
+      title: "Events in the next 60 days",
+      questions: [
+        { kind: "events", key: "events", label: "Site-visit weekends, expos and handovers", hint: "Festival buying days change every year — add one only with a date you have verified.", options: realEstateOptions.events, defaultKind: "visitday", withLabel: "Name (optional)" },
+      ],
+    },
+    {
+      id: "presence",
+      title: "Your profiles and access",
+      questions: [
+        stageQ,
+        cameraQ("Is the founder or sales head comfortable on camera?"),
+        { kind: "choice", key: "siteAccess", label: "Can we film construction on site?", name: "Site access", options: yesNo("Yes", "No") },
+        consent3("Written consent from buyers to appear?", "Without it, no buyer faces or testimonials appear in the plan."),
+        { kind: "choice", key: "shoot", label: "How much time can you give for shoots?", name: "Shoot", options: shootOptions("We'll send our own photos") },
+        platformsQ("real estate"),
+        optimizeQ,
+      ],
+    },
+    packageStep,
+  ],
+  generate: (raw, startDate) => generateRealEstatePlan({ ...withDates(raw as unknown as RealEstateAnswers), distances: ((raw.distances as string[]) ?? []).filter((d) => d.trim()), startDate }),
+};
+
+const political: PlannerConfig = {
+  slug: "political-leaders",
+  label: "Political leaders",
+  nameKey: "name",
+  initial: {
+    name: "", city: "", role: "mla", goals: ["connect"], party: "", area: "", district: "Kanpur Nagar", languages: ["hindi"], issues: ["", "", ""],
+    meetingDay: "none", meetingTime: "", election: "none", mccStart: "", pollingDate: "", resultDate: "", onCamera: "all", team: "small",
+    grievance: "office", grievanceContact: "", work: [], events: [], stage: "revive", consent: "no", shoot: "2", pkg: "growth",
+    platforms: corePlatforms("political-leaders"), optimize: [],
+  },
+  steps: [
+    {
+      id: "basics",
+      title: "About you",
+      questions: [
+        { kind: "text", key: "name", label: "Your name, as you want it shown", required: true },
+        { kind: "choice", key: "role", label: "Your role", name: "Role", options: politicalOptions.roles },
+        { kind: "text", key: "party", label: "Party (optional — leave empty if independent)", hint: "For our records only. Our templates are non-partisan; send logos and colours as files if you want them used." },
+        { kind: "text", key: "area", label: "Constituency or ward", half: true },
+        { kind: "text", key: "district", label: "District", half: true },
+        { kind: "multi", key: "languages", label: "Languages for captions", options: politicalOptions.languages },
+      ],
+    },
+    {
+      id: "goals",
+      title: "Goals and local issues",
+      questions: [
+        { kind: "multi", key: "goals", label: "What do you want in the next 3 months?", hint: "Pick one or more. The first one you pick is your main goal.", options: politicalOptions.goals, star: true },
+        { kind: "list", key: "issues", label: "Top 3 local issues", itemLabel: "Issue", hint: "In your words. We listen and ask for suggestions — no statistics unless you give the source.", placeholder: "e.g. Drainage in the old market" },
+      ],
+    },
+    {
+      id: "work",
+      title: "Meetings, events and work done",
+      questions: [
+        { kind: "choice", key: "meetingDay", label: "Regular public meeting (janta darbar)", name: "Meeting day", options: politicalOptions.weekdays },
+        { kind: "text", key: "meetingTime", label: "Meeting time and place", placeholder: "e.g. 10 am – 1 pm at the area office", when: (a) => a.meetingDay !== "none" },
+        { kind: "events", key: "events", label: "Events in the next 60 days", options: politicalOptions.events, defaultKind: "visit", withLabel: "Name (optional)" },
+        {
+          kind: "group", key: "work", label: "Work done you can show", itemLabel: "Work done", max: 5, empty: { work: "", date: "", place: "" },
+          hint: "Only real, completed work with real photos. Each item is marked “client-provided fact — verify before posting”.",
+          fields: [
+            { key: "work", label: "What was done", type: "text", wide: true, placeholder: "e.g. Community hall repaired" },
+            { key: "date", label: "When", type: "date" },
+            { key: "place", label: "Where", type: "text", placeholder: "e.g. Ward 4" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "election",
+      title: "Election",
+      questions: [
+        { kind: "choice", key: "election", label: "Is an election coming up?", name: "Election", hint: "With dates, the plan switches to Model Code of Conduct mode and keeps the silence period clear. This is guidance — your legal or election team must confirm.", options: [{ id: "none", label: "No election in the next 60 days" }, { id: "upcoming", label: "Yes, dates announced" }] },
+        { kind: "date", key: "mccStart", label: "Model Code of Conduct starts", half: true, when: (a) => a.election === "upcoming" },
+        { kind: "date", key: "pollingDate", label: "Polling day in your constituency", half: true, when: (a) => a.election === "upcoming" },
+        { kind: "date", key: "resultDate", label: "Result day (optional)", half: true, when: (a) => a.election === "upcoming" },
+      ],
+    },
+    {
+      id: "presence",
+      title: "Your profiles and access",
+      questions: [
+        stageQ,
+        cameraQ("Are you comfortable on camera?"),
+        { kind: "choice", key: "team", label: "Team available for shoots", name: "Team", options: [{ id: "none", label: "Just me" }, { id: "small", label: "1–2 people" }, { id: "large", label: "3 or more" }] },
+        { kind: "choice", key: "grievance", label: "How do citizens reach you?", name: "Grievance channel", options: [{ id: "office", label: "Office visit" }, { id: "whatsapp", label: "WhatsApp" }, { id: "both", label: "Both" }] },
+        { kind: "text", key: "grievanceContact", label: "Office address or WhatsApp number to show", hint: "Exactly as you want it published." },
+        consent3("Written consent from citizens to appear?", "Without it, no citizen close-ups or testimonials appear. Minors never appear."),
+        { kind: "choice", key: "shoot", label: "How much time can you give for shoots?", name: "Shoot", options: shootOptions("I'll send my own photos") },
+        platformsQ("political leaders"),
+        optimizeQ,
+      ],
+    },
+    packageStep,
+  ],
+  generate: (raw, startDate) => {
+    const a = raw as unknown as PoliticalAnswers;
+    return generatePoliticalPlan({ ...withDates(a), city: a.district, work: a.work.filter((w) => w.work.trim()), startDate });
+  },
+};
+
+export const plannerConfigs: Record<string, PlannerConfig> = { schools: school, "hospitals-clinics": hospital, doctors: doctor, "real-estate": realEstate, "political-leaders": political };
 
 export const resolveOptions = (o: Options, a: Answers) => (typeof o === "function" ? o(a) : o);

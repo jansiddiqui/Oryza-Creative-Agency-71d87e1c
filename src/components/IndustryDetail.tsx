@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { categoryBySlug } from "@/data/categories";
-import { healthDaysVarying, medicalRules } from "@/data/medical";
 import type { Plan, Playbook } from "@/lib/engine/types";
 import { DayCard } from "@/components/PlanBits";
 import { Arrow, ButtonLink, Container, Eyebrow } from "@/components/ui";
@@ -11,8 +10,8 @@ import { PlanTimeline } from "@/components/infographics/PlanTimeline";
 import { CheckIcon } from "@/components/icons";
 import { JsonLd, breadcrumbSchema, faqSchema, serviceSchema } from "@/components/JsonLd";
 
-/** Shared layout for the Hospitals & clinics and Doctors industry pages. */
-export function MedicalIndustry(props: {
+/** Shared layout for the industry pages built on the plan engine (hospitals, doctors, real estate, political leaders). */
+export function IndustryDetail(props: {
   slug: string;
   crumb: string;
   title: string;
@@ -25,7 +24,11 @@ export function MedicalIndustry(props: {
   sampleLabel: string;
   sampleIntro: string;
   detailHeading: string;
-  extraRules?: string[];
+  /** Compliance rules shown on the page — the same ones the engine enforces. */
+  rules: string[];
+  rulesHeading: string;
+  rulesNote?: ReactNode;
+  platformNote?: ReactNode;
   faqs: { q: string; a: string }[];
   faqHeading: string;
   cta: string;
@@ -84,21 +87,15 @@ export function MedicalIndustry(props: {
           <div>
             <Eyebrow>Platforms for {props.crumb.toLowerCase()}</Eyebrow>
             <FitStrip category={cat} />
-            <p className="mt-6 text-[15px] text-ink-soft">
-              Google Business Profile is core: correct timings, answered questions, fresh photos and a steady flow of honest
-              reviews from genuine patients — never paid, scripted or fake.
-            </p>
+            {props.platformNote && <p className="mt-6 text-[15px] text-ink-soft">{props.platformNote}</p>}
           </div>
           <div>
             <Eyebrow>Compliance, built into every plan</Eyebrow>
-            <h2 className="mb-5 font-display text-3xl tracking-tight">Healthcare content has rules. Our planner enforces them.</h2>
+            <h2 className="mb-5 font-display text-3xl tracking-tight">{props.rulesHeading}</h2>
             <ul className="space-y-3 text-[15px] text-ink-soft">
-              {[...medicalRules, ...(props.extraRules ?? [])].map((r) => <li key={r} className="flex gap-3"><CheckIcon size={18} accent className="mt-0.5 shrink-0" />{r}</li>)}
+              {props.rules.map((r) => <li key={r} className="flex gap-3"><CheckIcon size={18} accent className="mt-0.5 shrink-0" />{r}</li>)}
             </ul>
-            <p className="mt-5 text-[13px] text-muted">
-              Awareness days are taken from a fixed-date list. Days whose date changes each year ({healthDaysVarying.map((d) => d.name).join(", ")}) are
-              verified yearly before we schedule them.
-            </p>
+            {props.rulesNote && <p className="mt-5 text-[13px] text-muted">{props.rulesNote}</p>}
           </div>
         </Container>
       </section>

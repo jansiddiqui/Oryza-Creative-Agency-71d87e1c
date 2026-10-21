@@ -126,6 +126,45 @@ function QuestionField({ q, a, set }: { q: Question; a: Answers; set: (k: string
             {items.map((v, i) => (
               <input key={i} aria-label={`${q.itemLabel} ${i + 1}`} value={v} onChange={(e) => set(q.key, items.map((x, j) => (j === i ? e.target.value : x)))} className={inputCls} placeholder={i === 0 ? q.placeholder : ""} />
             ))}
+            {q.max && items.length < q.max && (
+              <button type="button" onClick={() => set(q.key, [...items, ""])} className="rounded-full border border-dashed border-ink/30 px-5 py-2 text-sm font-semibold hover:border-ink">+ Add another</button>
+            )}
+          </div>
+        </Field>
+      );
+    }
+    case "group": {
+      const rows = arr<Record<string, string>>(q.key);
+      const update = (i: number, k: string, v: string) => set(q.key, rows.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+      return (
+        <Field label={q.label} hint={q.hint}>
+          <div className="space-y-4">
+            {rows.map((row, i) => (
+              <fieldset key={i} className="rounded-2xl border border-line p-4 sm:p-5">
+                <legend className="px-1 text-sm font-semibold">{q.itemLabel} {i + 1}</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {q.fields.map((f) => {
+                    const id = `q-${q.key}-${i}-${f.key}`;
+                    return (
+                      <div key={f.key} className={f.wide ? "sm:col-span-2" : ""}>
+                        <label htmlFor={id} className="mb-1 block text-[13px] font-semibold text-ink-soft">{f.label}</label>
+                        {f.type === "choice" ? (
+                          <select id={id} value={row[f.key] ?? ""} onChange={(e) => update(i, f.key, e.target.value)} className={inputCls}>
+                            {f.options?.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                          </select>
+                        ) : (
+                          <input id={id} type={f.type === "date" ? "date" : "text"} value={row[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => update(i, f.key, e.target.value)} className={inputCls} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button type="button" onClick={() => set(q.key, rows.filter((_, j) => j !== i))} className="mt-3 text-sm font-semibold text-muted hover:text-ink">Remove</button>
+              </fieldset>
+            ))}
+            {rows.length < (q.max ?? 4) && (
+              <button type="button" onClick={() => set(q.key, [...rows, { ...q.empty }])} className="rounded-full border border-dashed border-ink/30 px-5 py-2 text-sm font-semibold hover:border-ink">+ Add {q.itemLabel.toLowerCase()}</button>
+            )}
           </div>
         </Field>
       );
