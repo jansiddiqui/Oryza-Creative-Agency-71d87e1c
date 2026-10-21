@@ -3,13 +3,13 @@ import { categories } from "@/data/categories";
 import { addressLine, legalNav, nav, site, telHref } from "@/lib/site";
 import { Logo } from "./Header";
 import { Container } from "./ui";
-import { IndustryIcon, MailIcon, PhoneIcon, PinIcon } from "./icons";
+import { MailIcon, PhoneIcon, PinIcon } from "./icons";
 
 export function Footer() {
   return (
     <footer className="bg-ink text-paper/80">
       <div className="gold-rule" />
-      <Container className="grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr]">
+      <Container className="grid gap-12 py-16 md:grid-cols-[1.2fr_0.7fr_1.6fr]">
         <div>
           <Logo light />
           <p className="mt-5 max-w-sm text-sm leading-relaxed">
@@ -40,19 +40,22 @@ export function Footer() {
             <li><Link href="/plan-builder" className="hover:text-paper">Free plan builder</Link></li>
           </ul>
         </nav>
-        <div>
+        <nav aria-label="Industries">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gold-300">Industries</p>
-          <ul className="space-y-2.5 text-sm">
-            {categories.slice(0, 7).map((c) => (
+          {/* Every industry: two compact columns from sm up, a plain list on phones. Text links only (no icons, no prefetch) keep it light. */}
+          <ul className="grid gap-y-2.5 text-sm sm:grid-cols-2 sm:gap-x-6">
+            {categories.map((c) => (
               <li key={c.slug}>
-                <Link href={c.plannerLive ? `/industries/${c.slug}` : "/industries"} className="flex items-center gap-2.5 hover:text-paper">
-                  <IndustryIcon slug={c.slug} size={16} className="text-gold-300" />
+                <Link href={c.plannerLive ? `/industries/${c.slug}` : "/industries"} prefetch={false} className="hover:text-paper">
                   {c.name}
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
+          <Link href="/industries" prefetch={false} className="mt-4 inline-block text-sm font-semibold text-gold-300 hover:text-gold-100">
+            All industries →
+          </Link>
+        </nav>
       </Container>
       <Container className="flex flex-col gap-2 border-t border-paper/10 py-6 text-xs text-paper/50 sm:flex-row sm:justify-between">
         <p>

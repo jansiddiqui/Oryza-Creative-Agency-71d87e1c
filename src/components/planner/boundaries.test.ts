@@ -10,14 +10,14 @@ const root = process.cwd();
 const read = (p: string) => readFileSync(join(root, p), "utf8");
 const staticImports = (src: string) => [...src.matchAll(/^import\s[^;]*?from\s+"([^"]+)"/gm)].map((m) => m[1]);
 
-const ENGINES = ["school-engine", "medical-engine", "real-estate-engine", "political-engine", "restaurant-engine", "coaching-engine", "retail-engine", "wellness-engine", "style-engine"];
-const PLAYBOOKS = ["school", "hospital", "doctor", "real-estate", "political", "restaurant", "coaching", "retail", "wellness", "style"];
+const ENGINES = ["school-engine", "medical-engine", "real-estate-engine", "political-engine", "restaurant-engine", "coaching-engine", "retail-engine", "wellness-engine", "style-engine", "b2b-engine", "professionals-engine", "creators-engine"];
+const PLAYBOOKS = ["school", "hospital", "doctor", "real-estate", "political", "restaurant", "coaching", "retail", "wellness", "style", "b2b", "professionals", "creators"];
 
 describe("planner bundle boundaries", () => {
   it("the planner registry loads every category with a dynamic import only", () => {
     const src = read("src/components/planner/configs.ts");
     for (const i of staticImports(src)) expect(i, i).not.toMatch(/engine|playbooks|categories\//);
-    expect(src.match(/import\("\.\/categories\//g)?.length).toBeGreaterThanOrEqual(10);
+    expect(src.match(/import\("\.\/categories\//g)?.length).toBeGreaterThanOrEqual(13);
   });
 
   it("the plan builder and plan view never import an engine or a playbook statically", () => {
@@ -38,6 +38,9 @@ describe("planner bundle boundaries", () => {
       "retail-showrooms.ts": ["retail-engine"],
       "gyms-salons.ts": ["wellness-engine"],
       "interiors-fashion-jewellery.ts": ["style-engine"],
+      "b2b-manufacturers.ts": ["b2b-engine"],
+      "professionals.ts": ["professionals-engine"],
+      "creators.ts": ["creators-engine"],
     };
     const dir = "src/components/planner/categories";
     for (const f of readdirSync(join(root, dir))) {
@@ -59,6 +62,9 @@ describe("industry page boundaries", () => {
     "retail-showrooms": { samples: "retail", playbooks: ["retail"] },
     "gyms-salons": { samples: "wellness", playbooks: ["wellness"] },
     "interiors-fashion-jewellery": { samples: "style", playbooks: ["style"] },
+    "b2b-manufacturers": { samples: "b2b", playbooks: ["b2b"] },
+    professionals: { samples: "professionals", playbooks: ["professionals"] },
+    creators: { samples: "creators", playbooks: ["creators"] },
   };
   it.each(Object.entries(pages))("/industries/%s imports only its own sample and playbook", (slug, own) => {
     const imports = staticImports(read(`src/app/(site)/industries/${slug}/page.tsx`));
