@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Client operations screens (admin only) get their own stylesheet, app/admin/(panel)/ops.css, so the public CSS never changes for them. */
+@source not "../components/admin/ops";
+@source not "./admin/*/clients";
+@source not "./admin/*/calendar";
+@source not "./admin/*/today";
+@source not "./admin/*/settings";
+
 /* Oryza brand tokens — derived from the gold "O" mark and charcoal-green wordmark */
 @theme {
   --color-ink: #13201c;

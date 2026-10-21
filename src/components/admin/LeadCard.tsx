@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { LEAD_STATUSES } from "@/lib/admin/types";
 import { whatsappFor, type Lead } from "@/lib/leads-format";
@@ -56,6 +57,9 @@ export function LeadCard({ lead }: { lead: Lead }) {
           </a>
         )}
         <a href={`tel:${lead.phone}`} className="rounded-full border border-ink/20 px-4 py-2 text-[13px] font-semibold hover:border-ink">Call</a>
+        <Link href={`/admin/clients/new?lead=${lead.id}`} className="rounded-full border border-gold-500 bg-gold-100 px-4 py-2 text-[13px] font-semibold text-ink hover:border-ink">
+          Convert to client
+        </Link>
       </div>
 
       {(lead.message || lead.planSummary || lead.answers) && (

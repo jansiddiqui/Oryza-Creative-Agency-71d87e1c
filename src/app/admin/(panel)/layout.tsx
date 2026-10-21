@@ -1,3 +1,4 @@
+import "./ops.css";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/admin/auth";
 
