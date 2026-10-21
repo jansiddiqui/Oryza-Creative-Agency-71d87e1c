@@ -117,7 +117,7 @@ export interface CategoryConfig<A extends BaseAnswers> {
    * Templates that take their variables from a list: consumed once each, or cycled. A list item is either one
    * value (stored under key) or a set of variables. A template whose list is empty is never scheduled.
    */
-  templateLists?: (a: A) => Record<string, { key: string; list: (string | Record<string, string>)[]; mode: "consume" | "cycle" }>;
+  templateLists?: (a: A) => Record<string, TemplateList>;
   /** May templates that show identifiable faces be used? */
   facesAllowed: (a: A) => boolean;
   /** Compliance: templates whose wording matches are never scheduled. */
@@ -158,6 +158,17 @@ export interface CategoryConfig<A extends BaseAnswers> {
   snapshot: (ctx: SummaryContext<A>) => { label: string; value: string }[];
   /** Compliance notes shown with the plan (omitted from the plan when absent). */
   compliance?: (ctx: SummaryContext<A>) => string[];
+}
+
+/**
+ * A template's list of variables. With `shared`, every template naming the same pool draws from one list:
+ * each item is used at most `maxUses` times in the month, never twice in the same format.
+ */
+export interface TemplateList {
+  key: string;
+  list: (string | Record<string, string>)[];
+  mode: "consume" | "cycle";
+  shared?: { pool: string; maxUses: number };
 }
 
 export function fill(text: string, vars: Record<string, string>): string {
@@ -283,6 +294,15 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   // ---------- 4. Fill free slots by score ----------
   const lists = config.templateLists?.(a) ?? {};
   const listIdx: Record<string, number> = {};
+  const poolUses: Record<string, { n: number; formats: Set<string> }[]> = {};
+  /** The least-used item of a shared pool this template may still use, or -1. */
+  const poolPick = (t: Template, l: TemplateList) => {
+    if (!l.shared) return -1;
+    const st = (poolUses[l.shared.pool] ??= l.list.map(() => ({ n: 0, formats: new Set<string>() })));
+    let best = -1;
+    for (let i = 0; i < st.length; i++) if (st[i].n < l.shared.maxUses && !st[i].formats.has(t.format) && (best < 0 || st[i].n < st[best].n)) best = i;
+    return best;
+  };
   const used: Record<string, number> = {};
   const lastUse: Record<string, number> = {};
   for (const s of slots.filter((x) => x.template)) {
@@ -299,6 +319,7 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     const l = lists[t.id];
     if (l && !l.list.length) return false;
     if (l?.mode === "consume" && (listIdx[t.id] ?? 0) >= l.list.length) return false;
+    if (l?.shared && poolPick(t, l) < 0) return false;
     if (a.shoot === "own" && t.who === "Client arranges") return false;
     if (!ignoreCooldown && lastUse[t.id] !== undefined) {
       const gap = day - lastUse[t.id];
@@ -323,7 +344,14 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     s.template = best;
     s.vars = {};
     const l = lists[best.id];
-    if (l && l.list.length) {
+    if (l?.shared) {
+      const i = poolPick(best, l);
+      const v = l.list[i];
+      if (typeof v === "string") s.vars[l.key] = v;
+      else Object.assign(s.vars, v);
+      poolUses[l.shared.pool][i].n++;
+      poolUses[l.shared.pool][i].formats.add(best.format);
+    } else if (l && l.list.length) {
       const i = listIdx[best.id] ?? 0;
       const v = l.mode === "consume" ? l.list[i] : l.list[i % l.list.length];
       if (typeof v === "string") s.vars[l.key] = v;

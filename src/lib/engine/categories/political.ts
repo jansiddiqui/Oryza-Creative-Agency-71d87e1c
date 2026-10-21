@@ -5,7 +5,7 @@
  */
 import { politicalOptions, politicalPlaybook, POLITICAL_BANNED_WORDING } from "@/data/playbooks/political";
 import { addDays, dayOf, fmtDate } from "../dates";
-import { PLAN_DAYS, type BaseAnswers, type CategoryConfig } from "../core";
+import { PLAN_DAYS, type BaseAnswers, type CategoryConfig, type TemplateList } from "../core";
 
 export type PoliticalRole = "mla" | "mp" | "councillor" | "aspirant" | "office";
 export type PoliticalGoal = "connect" | "work" | "grievance" | "events" | "youth" | "campaign";
@@ -28,6 +28,8 @@ export interface PoliticalAnswers extends BaseAnswers {
   /** ISO dates (only when an election is upcoming). */
   mccStart: string;
   pollingDate: string;
+  /** Post a neutral voting reminder on polling day? Off unless the election team confirms. */
+  pollReminder: "yes" | "no";
   resultDate: string;
   onCamera: "all" | "some" | "none";
   team: "none" | "small" | "large";
@@ -78,9 +80,13 @@ const grievanceLine = (a: PoliticalAnswers) => {
   return a.grievance === "whatsapp" ? `WhatsApp the office: ${c}` : a.grievance === "both" ? `Visit or WhatsApp the office: ${c}` : `Visit the office: ${c}`;
 };
 
+/** Full note, kept in the compliance section. */
 const MCC_NOTE = "Model Code of Conduct in force: no new schemes or projects announced, no government offices or resources in frame; paid promotion needs MCMC pre-certification; record the expense.";
-/** Items allowed on silence days: the neutral polling-day message only. */
+/** Shown once per MCC day in the calendar. */
+export const MCC_DAY_NOTICE = "Model Code of Conduct in force — check the compliance notes before publishing.";
+/** Items allowed on silence days: the neutral polling-day message, only when the client turned it on. */
 const SILENCE_OK = new Set(["LP11", "LR13"]);
+const reminderOn = (a: PoliticalAnswers) => a.pollReminder === "yes";
 
 export const politicalConfig: CategoryConfig<PoliticalAnswers> = {
   slug: "political-leaders",
@@ -130,11 +136,12 @@ export const politicalConfig: CategoryConfig<PoliticalAnswers> = {
   templateLists: (a) => {
     const is = issues(a);
     const f = facts(a);
-    const out: Record<string, { key: string; list: (string | Record<string, string>)[]; mode: "consume" | "cycle" }> = {};
+    const out: Record<string, TemplateList> = {};
     for (const t of politicalPlaybook.templates) {
       if (t.pinnedOnly || t.format === "story") continue;
       const text = `${t.title} ${t.hook}`;
-      if (/\{work\}/.test(text)) out[t.id] = { key: "work", list: f, mode: "cycle" };
+      // Each fact at most twice a month, in different formats; other templates fill the rest.
+      if (/\{work\}/.test(text)) out[t.id] = { key: "work", list: f, mode: "cycle", shared: { pool: "work", maxUses: 2 } };
       else if (/\{issue\}/.test(text)) out[t.id] = { key: "issue", list: is, mode: "cycle" };
     }
     return out;
@@ -166,7 +173,7 @@ export const politicalConfig: CategoryConfig<PoliticalAnswers> = {
     const open = (d: number) => valid(d) && !closed.has(d);
     const mcc = new Set(el.mcc);
     if (a.stage === "new") pin("post", 2, "LP13", "New account: introduce the leader first");
-    if (valid(el.poll)) {
+    if (valid(el.poll) && reminderOn(a)) {
       pin("post", el.poll, "LP11", "Polling day: neutral message only");
       if (el.poll >= firstReelDay) pin("reel", el.poll, "LR13", "Polling day: neutral message only");
     }
@@ -238,11 +245,10 @@ export const politicalConfig: CategoryConfig<PoliticalAnswers> = {
     const mcc = new Set(el.mcc);
     for (const d of days) {
       if (silence.has(d.day)) {
-        d.items = d.items.filter((x) => SILENCE_OK.has(x.templateId) && (x.platform === "instagram" || x.platform === "facebook"));
+        d.items = d.items.filter((x) => reminderOn(a) && SILENCE_OK.has(x.templateId) && (x.platform === "instagram" || x.platform === "facebook"));
         d.shoot = undefined;
       }
-      if (mcc.has(d.day) && has("election:yes"))
-        for (const x of d.items) x.note = x.note ? `${x.note} ${MCC_NOTE}` : MCC_NOTE;
+      if (mcc.has(d.day) && has("election:yes")) d.notice = MCC_DAY_NOTICE;
     }
   },
 
@@ -302,8 +308,13 @@ export const politicalConfig: CategoryConfig<PoliticalAnswers> = {
     out.push(a.consent === "yes" ? "Citizens appear only where written consent is on file; no minors." : "No citizen close-ups or testimonials are scheduled — written consent is not in place.");
     if (election(a)) {
       const span = (xs: number[]) => (xs.length ? `${fmtDate(days[xs[0] - 1].date)} – ${fmtDate(days[xs[xs.length - 1] - 1].date)}` : "");
-      if (el.mcc.length) out.push(`Model Code of Conduct mode on ${span(el.mcc)}: scheme explainers and resolved-complaint stories are switched off, every item carries the MCC note, paid promotion needs MCMC pre-certification, and expenses must be recorded.`);
-      if (el.silence.length) out.push(`Silence period ${span(el.silence)}: no campaign content is scheduled; polling day carries only a neutral “please vote” message.`);
+      if (el.mcc.length) out.push(`Model Code of Conduct mode on ${span(el.mcc)}: scheme explainers and resolved-complaint stories are switched off and each of these days is marked in the calendar. ${MCC_NOTE}`);
+      if (el.silence.length)
+        out.push(
+          reminderOn(a)
+            ? `Silence period ${span(el.silence)}: no campaign content is scheduled; polling day carries only the neutral voting reminder you turned on.`
+            : `Silence period ${span(el.silence)}: nothing is scheduled on polling day or in the 48 hours before it.`,
+        );
       if (a.events.some((e) => e.kind === "inauguration" && el.mcc.includes(dayOf(a.startDate, e.date)))) out.push("An inauguration falls inside the MCC period, so it is not promoted.");
       if (el.result) out.push("Result day has a neutral thank-you that works for any outcome — approve the final words on the day.");
     }

@@ -359,7 +359,7 @@ const political: PlannerConfig = {
   nameKey: "name",
   initial: {
     name: "", city: "", role: "mla", goals: ["connect"], party: "", area: "", district: "Kanpur Nagar", languages: ["hindi"], issues: ["", "", ""],
-    meetingDay: "none", meetingTime: "", election: "none", mccStart: "", pollingDate: "", resultDate: "", onCamera: "all", team: "small",
+    meetingDay: "none", meetingTime: "", election: "none", mccStart: "", pollingDate: "", resultDate: "", pollReminder: "no", onCamera: "all", team: "small",
     grievance: "office", grievanceContact: "", work: [], events: [], stage: "revive", consent: "no", shoot: "2", pkg: "growth",
     platforms: corePlatforms("political-leaders"), optimize: [],
   },
@@ -410,6 +410,7 @@ const political: PlannerConfig = {
         { kind: "date", key: "mccStart", label: "Model Code of Conduct starts", half: true, when: (a) => a.election === "upcoming" },
         { kind: "date", key: "pollingDate", label: "Polling day in your constituency", half: true, when: (a) => a.election === "upcoming" },
         { kind: "date", key: "resultDate", label: "Result day (optional)", half: true, when: (a) => a.election === "upcoming" },
+        { kind: "choice", key: "pollReminder", label: "Post a neutral voting reminder on polling day", name: "Polling-day reminder", hint: "Turn on only after your election team confirms. When off, polling day and the 48 hours before it stay completely empty.", options: [{ id: "no", label: "Off" }, { id: "yes", label: "On" }], when: (a) => a.election === "upcoming" },
       ],
     },
     {

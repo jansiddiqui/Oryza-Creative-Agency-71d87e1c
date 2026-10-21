@@ -90,7 +90,7 @@ export const politicalRules = [
   "Never: appeals based on religion or caste, attacks on anyone's personal life, hate speech, unverified claims or statistics, manipulated or deepfake media, images of the defence forces, or children in campaign content.",
   "Work-done posts use only the facts you provide (name, date, place) and are marked “client-provided fact — verify before posting”.",
   "When you enter election dates, the plan switches to Model Code of Conduct mode from the MCC start date: no new schemes or projects announced, no government offices or resources in content, paid political ads need MCMC pre-certification, and every expense is recorded.",
-  "No campaign content in the 48 hours before polling ends; polling day carries a neutral “please vote” message only.",
+  "Nothing is posted on polling day or in the 48 hours before it. A neutral voting reminder on polling day is added only if you turn it on after your election team confirms.",
   "Citizens appear only with written consent; no minors.",
   "This is guidance, not legal advice — your legal or election team must confirm before anything is published.",
 ];

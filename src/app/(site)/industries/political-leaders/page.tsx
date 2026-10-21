@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const faqs = [
   { q: "Do you work with every party?", a: "Oryza is non-partisan. Our templates work for any party or an independent; party names, symbols and colours appear only from assets you provide." },
   { q: "What happens when the Model Code of Conduct starts?", a: "Enter the MCC and polling dates and the plan switches to MCC mode from the start date: no new schemes or projects announced, no government offices or resources in content, paid ads flagged for MCMC pre-certification, and a reminder to record every expense." },
-  { q: "Will you post during the silence period?", a: "No. The planner keeps the 48 hours before polling ends clear of campaign content. Polling day carries only a neutral “please vote” message, and result day a neutral thank-you that works for any outcome." },
+  { q: "Will you post during the silence period?", a: "No. By default nothing is posted on polling day or in the 48 hours before it. A neutral voting reminder on polling day is added only if you turn it on after your election team confirms. Result day gets a neutral thank-you that works for any outcome." },
   { q: "Can you post about work I have done?", a: "Yes — using only the facts you give us (what, where, when) and real photos. Every such item is marked “client-provided fact — verify before posting”." },
   { q: "Is this legal advice?", a: "No. The planner follows widely published election guidance, but your legal or election team must confirm content before it is published." },
 ];

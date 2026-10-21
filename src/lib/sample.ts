@@ -123,6 +123,7 @@ export const samplePoliticalPlan = generatePoliticalPlan({
   election: "upcoming",
   mccStart: "2026-11-05",
   pollingDate: "2026-11-19",
+  pollReminder: "no",
   resultDate: "2026-11-22",
   onCamera: "all",
   team: "small",
