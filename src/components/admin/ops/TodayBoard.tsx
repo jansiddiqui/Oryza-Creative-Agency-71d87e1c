@@ -54,7 +54,7 @@ export function TaskCard({ task, item, client, team, today }: { task: TaskRow; i
         {task.status !== "done" && <button type="button" disabled={busy} className={`${btnSmall} bg-ink text-paper`} onClick={() => run({ status: "done" })}>Done</button>}
         {task.status !== "blocked" && task.status !== "done" && <button type="button" disabled={busy} className={btnSmall} onClick={() => setMode(mode === "blocked" ? "" : "blocked")}>Blocked</button>}
         <button type="button" disabled={busy} className={btnSmall} onClick={() => { setMode(mode === "note" ? "" : "note"); setText(task.note); }}>Add note</button>
-        <Link href={`/admin/clients/${task.clientId}#tasks`} className={btnSmall}>Open</Link>
+        <Link href={`/admin/items/${task.itemId}`} className={btnSmall}>Open</Link>
       </div>
       {mode && (
         <form
@@ -139,7 +139,7 @@ export function TodayBoard({ tasks, items, shoots, clients, team, me, today, ini
               <ul className="space-y-2">
                 {g.shoots.map((s) => (
                   <li key={s.id} className="rounded-xl border border-dashed border-ink/40 bg-paper p-3 text-[14px]">
-                    <p className="flex items-center gap-2 font-semibold"><ClientDot colour={clientById.get(s.clientId)?.colour ?? "#000"} /> {clientById.get(s.clientId)?.name} · {s.label}</p>
+                    <p className="flex items-center gap-2 font-semibold"><ClientDot colour={clientById.get(s.clientId)?.colour ?? "#000"} /> <Link href={`/admin/shoots/${s.id}`} className="underline-offset-4 hover:underline">{clientById.get(s.clientId)?.name} · {s.label}{s.startTime && ` · ${s.startTime}`}</Link></p>
                     <p className="text-[12px] text-muted">{s.location || "Location to confirm"}{s.shooter && ` · ${team.find((m) => m.email === s.shooter)?.name ?? s.shooter}`}</p>
                     {s.shots.length > 0 && <ul className="mt-1 list-disc pl-5 text-[13px] text-ink-soft">{s.shots.map((t) => <li key={t}>{t}</li>)}</ul>}
                   </li>

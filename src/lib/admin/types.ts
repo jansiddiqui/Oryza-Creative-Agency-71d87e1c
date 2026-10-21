@@ -28,7 +28,24 @@ export type AuditAction =
   | "onboarding.update"
   | "team.update"
   | "rules.update"
-  | "settings.update";
+  | "settings.update"
+  | "task.reassign"
+  | "leave.update"
+  | "estimates.update"
+  | "shoot.move"
+  | "shot.update"
+  | "asset.add"
+  | "asset.remove"
+  | "approval.create"
+  | "approval.revoke"
+  | "approval.send"
+  | "client.approved"
+  | "client.changes_requested"
+  | "reminder.sent"
+  | "report.update"
+  | "report.share"
+  | "billing.update"
+  | "invoice.update";
 
 export type LeadStatus = "new" | "contacted" | "converted" | "not_fit";
 

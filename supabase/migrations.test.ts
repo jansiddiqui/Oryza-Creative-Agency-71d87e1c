@@ -54,9 +54,9 @@ beforeAll(async () => {
 afterAll(async () => db?.close());
 
 describe("migrations + Row Level Security", () => {
-  it("creates both storage buckets: public processed images, private originals", async () => {
+  it("creates the storage buckets: public processed images; private originals and client assets", async () => {
     const rows = (await db.query<{ id: string; public: boolean }>("select id, public from storage.buckets order by id")).rows;
-    expect(rows).toEqual([{ id: "image-originals", public: false }, { id: "site-images", public: true }]);
+    expect(rows).toEqual([{ id: "client-assets", public: false }, { id: "image-originals", public: false }, { id: "site-images", public: true }]);
   });
 
   it("anon sees only live images", async () => {

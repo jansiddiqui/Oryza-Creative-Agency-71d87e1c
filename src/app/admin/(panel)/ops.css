@@ -9,6 +9,7 @@
 
 @source "../../../components/admin";
 @source "../";
+@source "../../share";
 
 /* Brand tokens: the same values as app/globals.css. */
 @theme {

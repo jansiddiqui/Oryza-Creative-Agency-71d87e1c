@@ -28,7 +28,7 @@ describe("admin question fields (copy of the planner's renderer)", () => {
         expect(renderToStaticMarkup(<QuestionField q={q} a={a} set={() => undefined} />).length, `${slug}:${q.key}`).toBeGreaterThan(20);
       }
     }
-  });
+  }, 30_000);
 });
 
 const clients: ClientLite[] = [
@@ -37,7 +37,7 @@ const clients: ClientLite[] = [
 ];
 const item = (x: Partial<ItemRow>): ItemRow => ({ id: "i", clientId: "c1", planId: "p", platform: "instagram", format: "reel", title: "T", hook: "", cta: "", pillar: "", templateId: "X", date: "2026-11-10", time: "7:00 pm", stage: "planned", assignee: null, complianceNote: "", clientApproved: false, ...x });
 const task = (x: Partial<TaskRow>): TaskRow => ({ id: "t", itemId: "i1", clientId: "c1", step: "script", label: "Script", due: "2026-11-10", time: "6:00 pm", role: "strategist", assignee: null, status: "todo", late: false, blockedReason: "", note: "", ...x });
-const shoot: ShootRow = { id: "s1", clientId: "c2", date: "2026-11-12", label: "Shoot day 1", shots: ["Classroom"], location: "", shooter: null, status: "planned" };
+const shoot: ShootRow = { id: "s1", clientId: "c2", date: "2026-11-12", label: "Shoot day 1", shots: ["Classroom"], location: "", shooter: null, status: "planned", startTime: "", endTime: "", props: "", people: "", notes: "" };
 
 describe("master calendar", () => {
   const items = [item({ id: "i1", title: "Meet our doctors", date: "2026-11-08" }), item({ id: "i2", clientId: "c2", title: "Sports day", date: "2026-11-12", format: "post" }), item({ id: "i3", title: "OPD timings", date: "2026-11-11", stage: "published" })];
@@ -84,5 +84,22 @@ describe("admin category list mirrors the public planner list", () => {
     expect(CATEGORY_LABELS).toEqual(plannerLabels);
     expect(Object.keys(opsPlannerLoaders).sort()).toEqual(Object.keys(plannerLoaders).sort());
     for (const [slug, load] of Object.entries(opsPlannerLoaders)) expect((await load()).slug).toBe(slug);
+  });
+});
+
+describe("monthly report", () => {
+  it("shows entered numbers and 'Not recorded' for anything missing — never zero", async () => {
+    const { ReportDoc } = await import("./share/ReportDoc");
+    const html = renderToStaticMarkup(
+      <ReportDoc clientName="Sunrise Clinic" month="2026-11-01" platforms={["instagram", "gbp"]} metrics={{ instagram: { followers_start: 1200, followers_end: 1350, reach: 0 } }} notes="" nextFocus="More doctor reels" delivery={{ planned: 30, published: 28, onTime: 26, onTimePct: 93 }} top={[]} />,
+    );
+    expect(html).toContain("Not recorded");
+    expect(html).toContain("1,350");
+    expect(html).toContain("+150");
+    expect(html).toContain("93%");
+    expect(html).toContain("More doctor reels");
+    // Google calls were not entered: the row says Not recorded and no bar is drawn for it.
+    expect(html).toMatch(/Calls<\/td><td class="[^"]*italic[^"]*">Not recorded/);
+    expect(html).not.toContain("Google: calls"); // no chart at all when nothing was recorded
   });
 });

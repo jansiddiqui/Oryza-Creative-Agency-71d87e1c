@@ -1,5 +1,9 @@
 import { AdminTitle } from "@/components/admin/AdminShell";
 import { CalendarBoard } from "@/components/admin/ops/CalendarBoard";
+import { WarningsPanel } from "@/components/admin/ops/WarningsPanel";
+import { loadWarnings } from "@/lib/admin/team-data";
+import { daysFrom } from "@/lib/ops/team";
+import { dayOf } from "@/lib/engine/dates";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listClients, listItems, listShoots, listTasks, listTeam } from "@/lib/admin/ops-data";
 import { viewRange, type CalendarView } from "@/lib/ops/calendar";
@@ -18,10 +22,12 @@ export default async function Calendar({ searchParams }: { searchParams: Promise
   const anchor = sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
   const range = viewRange(view, anchor);
   const [clients, items, shoots, team] = await Promise.all([listClients(), listItems(range), listShoots(range), listTeam()]);
+  const warnings = await loadWarnings(range, daysFrom(range.from, dayOf(range.from, range.to)));
   const tasks = await listTasks({ to: "9999-12-31", itemIds: items.map((x) => x.id), openOnly: true });
   return (
     <>
       <AdminTitle title="Calendar" intro="Every client's content in one place. Click an item for details or to move it; on a computer you can also drag it to another day." />
+      <WarningsPanel warnings={warnings} />
       <CalendarBoard
         view={view}
         anchor={anchor}

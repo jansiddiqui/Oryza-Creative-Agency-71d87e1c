@@ -272,7 +272,7 @@ describe("Today view", () => {
     task({ id: "done", due: "2026-11-08", clientId: "c1", status: "done" }),
   ];
   const items = [item({ id: "p1", date: today, clientId: "c1" }), item({ id: "p2", date: "2026-11-11" })];
-  const shoots: ShootRow[] = [{ id: "s1", clientId: "c1", date: today, label: "Shoot day", shots: [], location: "", shooter: null, status: "planned" }];
+  const shoots: ShootRow[] = [{ id: "s1", clientId: "c1", date: today, label: "Shoot day", shots: [], location: "", shooter: null, status: "planned", startTime: "", endTime: "", props: "", people: "", notes: "" }];
 
   it("groups into overdue, due today, next 3 days, publishing today and shoots today", () => {
     const g = groupToday(tasks, items, shoots, { today });

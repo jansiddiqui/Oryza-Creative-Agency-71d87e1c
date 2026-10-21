@@ -116,6 +116,7 @@ export interface TaskRow {
   late: boolean;
   blockedReason: string;
   note: string;
+  completedAt?: string | null;
 }
 
 export interface ItemRow {
@@ -146,6 +147,12 @@ export interface ShootRow {
   location: string;
   shooter: string | null;
   status: ShootStatus;
+  /** "HH:MM" (24 h) or "" when not set. */
+  startTime: string;
+  endTime: string;
+  props: string;
+  people: string;
+  notes: string;
 }
 
 export interface ClientLite {

@@ -125,7 +125,7 @@ describe("server-side admin check (every admin action and API)", () => {
 
   it("every admin server action goes through adminAction", () => {
     const dir = join(process.cwd(), "src", "app", "admin");
-    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts", "(panel)/clients/actions.ts", "(panel)/calendar/actions.ts", "(panel)/today/actions.ts", "(panel)/settings/actions.ts"];
+    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts", "(panel)/clients/actions.ts", "(panel)/calendar/actions.ts", "(panel)/today/actions.ts", "(panel)/settings/actions.ts", "(panel)/team/actions.ts", "(panel)/shoots/actions.ts", "(panel)/items/actions.ts", "(panel)/approvals/actions.ts", "(panel)/reports/actions.ts", "(panel)/billing/actions.ts"];
     for (const f of actionFiles) {
       const src = readFileSync(join(dir, f), "utf8");
       const exported = src.match(/export async function \w+/g) ?? [];
@@ -152,7 +152,8 @@ describe("public pages ship no admin code", () => {
         const p = join(d, e.name);
         const rel = relative(root, p).split(sep).join("/");
         if (e.isDirectory()) {
-          if (["app/admin", "components/admin", "lib/admin", "lib/supabase", "lib/images"].includes(rel)) continue;
+          // app/share (client links) and app/api/cron are server-checked surfaces of their own (tested below).
+          if (["app/admin", "app/share", "app/api/cron", "components/admin", "lib/admin", "lib/supabase", "lib/images"].includes(rel)) continue;
           walk(p);
         } else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) && rel !== "lib/leads.ts" && rel !== "proxy.ts") {
           const src = readFileSync(p, "utf8");
@@ -165,4 +166,55 @@ describe("public pages ship no admin code", () => {
     walk(root);
     expect(offenders).toEqual([]);
   });
+});
+
+describe("client links and cron (no login, checked on the server)", () => {
+  const read = (f: string) => readFileSync(join(process.cwd(), "src", f), "utf8");
+
+  it("every share page and action rate-limits the visitor and opens the link through its signature check", () => {
+    for (const f of ["app/share/approve/[token]/page.tsx", "app/share/report/[token]/page.tsx", "app/share/approve/[token]/answer/route.ts"]) {
+      const src = read(f);
+      expect(src, f).toMatch(/rateOk\(/);
+      expect(src, f).toMatch(/openApprovalLink\(|openReportLink\(|respond\(/);
+    }
+  });
+
+  it("share pages are never indexed and carry no analytics", () => {
+    const layout = read("app/share/layout.tsx");
+    expect(layout).toMatch(/index: false/);
+    expect(layout).not.toMatch(/from "[^"]*analytics[^"]*"|gtag\(|clarity\.ms|googletagmanager/i);
+    expect(read("../next.config.ts")).toMatch(/source: "\/share\/:path\*"[\s\S]*noindex/);
+  });
+
+  it("the reminders cron refuses requests without the CRON_SECRET bearer token", async () => {
+    vi.doMock("@/lib/admin/reminders-run", () => ({ runReminders: vi.fn(async () => ({ digest: 1, approval: 0, renewal: 0, skipped: [] })) }));
+    const { GET } = await import("@/app/api/cron/reminders/route");
+    vi.stubEnv("CRON_SECRET", "c".repeat(32));
+    expect((await GET(new Request("https://x.in/api/cron/reminders"))).status).toBe(401);
+    expect((await GET(new Request("https://x.in/api/cron/reminders", { headers: { authorization: "Bearer wrong" } }))).status).toBe(401);
+    const ok = await GET(new Request("https://x.in/api/cron/reminders", { headers: { authorization: `Bearer ${"c".repeat(32)}` } }));
+    expect(ok.status).toBe(200);
+    vi.stubEnv("CRON_SECRET", "");
+    expect((await GET(new Request("https://x.in/api/cron/reminders", { headers: { authorization: "Bearer " } }))).status).toBe(401);
+  });
+});
+
+describe("payments are owner-only", () => {
+  const read = (f: string) => readFileSync(join(process.cwd(), "src", f), "utf8");
+  it("every billing action requires an owner, and so does the Payments page", () => {
+    const src = read("app/admin/(panel)/billing/actions.ts");
+    const exported = src.match(/export async function \w+/g) ?? [];
+    expect(exported.length).toBeGreaterThan(0);
+    expect((src.match(/\}, "owner"\);/g) ?? []).length).toBe(exported.length);
+    expect(read("app/admin/(panel)/billing/page.tsx")).toMatch(/requireAdmin\("owner"\)/);
+    const clientPage = read("app/admin/(panel)/clients/[id]/page.tsx");
+    expect(clientPage).toMatch(/isOwner \? getBilling\(id\) : null/);
+    expect(clientPage).toMatch(/isOwner && billing &&/);
+  });
+
+  it("an editor calling a billing action gets 403 and nothing runs", async () => {
+    state.user = { email: "editor@oryza.test" };
+    const { saveBillingAction } = await import("@/app/admin/(panel)/billing/actions");
+    expect(await saveBillingAction("x", "1", "")).toMatchObject({ ok: false, status: 403 });
+  }, 30_000);
 });

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { adminAction } from "@/lib/admin/action";
 import { audit } from "@/lib/admin/audit";
 import { saveRules, saveTeamMember, saveWorkingDays, type TeamMember } from "@/lib/admin/ops-data";
+import { saveCapacity, saveEstimates } from "@/lib/admin/team-data";
 import { TEAM_ROLES, type DeadlineRule } from "@/lib/ops/types";
 
 const ROLE_IDS = TEAM_ROLES.map((r) => r.id as string);
@@ -43,9 +44,29 @@ export async function saveTeamMemberAction(m: TeamMember) {
       roles: m.roles.filter((r) => ROLE_IDS.includes(r)),
       workingDays: cleanDays(m.workingDays),
       active: Boolean(m.active),
+      capacityHours: m.capacityHours == null || !Number.isFinite(Number(m.capacityHours)) ? null : Math.min(16, Math.max(1, Number(m.capacityHours))),
+      digestOptOut: Boolean(m.digestOptOut),
     };
     await saveTeamMember(clean);
     await audit(admin.email, "team.update", clean.email, { roles: clean.roles, active: clean.active });
+    revalidatePath("/admin", "layout");
+  }, "owner");
+}
+
+/** Owner only: estimated hours per task step and the default hours per person per day. */
+export async function saveWorkloadSettingsAction(estimates: Record<string, number>, capacity: number) {
+  return adminAction(async (admin) => {
+    const clean: Record<string, number> = {};
+    for (const [step, h] of Object.entries(estimates ?? {})) {
+      const n = Number(h);
+      if (!/^[a-z_]+$/.test(step) || !Number.isFinite(n) || n < 0 || n > 24) throw new Error("Hours must be between 0 and 24");
+      clean[step] = Math.round(n * 100) / 100;
+    }
+    const cap = Number(capacity);
+    if (!Number.isFinite(cap) || cap < 1 || cap > 16) throw new Error("Capacity must be between 1 and 16 hours");
+    await saveEstimates(clean);
+    await saveCapacity(cap, admin.email);
+    await audit(admin.email, "estimates.update", "task_estimates", { steps: Object.keys(clean).length, capacity: cap });
     revalidatePath("/admin", "layout");
   }, "owner");
 }

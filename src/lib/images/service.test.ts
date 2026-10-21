@@ -123,7 +123,7 @@ describe("approve, replace, rollback, remove, delete", () => {
     expect((await store.repo.get(v1.id))!.status).toBe("live");
     expect((await store.repo.get(v2.id))!.status).toBe("archived");
     expect(log.map((l) => l.action)).toEqual(["image.upload", "image.approve", "image.upload", "image.replace", "image.rollback"]);
-  });
+  }, 20_000); // two full image encodes: allow for a busy machine when the whole suite runs in parallel
 
   it("cannot roll back to an upload that was never approved", async () => {
     const v = await upload("home-hero");

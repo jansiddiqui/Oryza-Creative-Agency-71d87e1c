@@ -10,9 +10,10 @@ export function adminNav(admin: Pick<Admin, "role">): NavItem[] {
     { href: "/admin/today", label: "Today" },
     { href: "/admin/calendar", label: "Calendar" },
     { href: "/admin/clients", label: "Clients" },
+    { href: "/admin/team", label: "Team" },
     { href: "/admin/leads", label: "Leads" },
     { href: "/admin/images", label: "Images" },
-    ...(admin.role === "owner" ? [{ href: "/admin/users", label: "Users" }, { href: "/admin/settings", label: "Settings" }] : []),
+    ...(admin.role === "owner" ? [{ href: "/admin/billing", label: "Payments" }, { href: "/admin/users", label: "Users" }, { href: "/admin/settings", label: "Settings" }] : []),
     { href: "/admin/audit", label: "Activity" },
     { href: "/admin/account", label: "Account" },
   ];

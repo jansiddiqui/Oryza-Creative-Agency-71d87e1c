@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { setOnboardingAction, updateClientAction, updateShootAction } from "@/app/admin/(panel)/clients/actions";
 import type { Client, OnboardingRow, TeamMember } from "@/lib/admin/ops-data";
@@ -121,7 +122,7 @@ export function ShootList({ shoots, clientId, team }: { shoots: ShootRow[]; clie
     <ul className="grid gap-3 lg:grid-cols-2">
       {shoots.map((s) => (
         <li key={s.id} className={`rounded-2xl border border-dashed bg-paper p-4 text-[14px] ${s.status === "cancelled" ? "border-line text-muted" : "border-ink/40"}`}>
-          <p className="font-semibold">{fmtDay(s.date)} · {s.label}</p>
+          <p className="flex flex-wrap items-center justify-between gap-2 font-semibold">{fmtDay(s.date)} · {s.label}<Link href={`/admin/shoots/${s.id}`} className={btnSmall}>Open shoot page</Link></p>
           {s.shots.length > 0 && <ul className="mt-2 list-disc pl-5 text-[13px] text-ink-soft">{s.shots.map((t) => <li key={t}>{t}</li>)}</ul>}
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <label className={label}>

@@ -42,6 +42,10 @@ export interface TeamMember {
   roles: TeamRole[];
   workingDays: number[];
   active: boolean;
+  /** Hours per day for this person (null = the agency-wide capacity). */
+  capacityHours?: number | null;
+  /** Opted out of the morning digest email. */
+  digestOptOut?: boolean;
 }
 
 export interface OnboardingRow {
@@ -121,6 +125,7 @@ const toTask = (r: R): TaskRow => ({
   late: Boolean(r.late),
   blockedReason: r.blocked_reason as string,
   note: r.note as string,
+  completedAt: (r.completed_at as string) ?? null,
 });
 const toShoot = (r: R): ShootRow => ({
   id: r.id as string,
@@ -131,6 +136,11 @@ const toShoot = (r: R): ShootRow => ({
   location: r.location as string,
   shooter: (r.shooter as string) ?? null,
   status: r.status as ShootStatus,
+  startTime: (r.start_time as string) ?? "",
+  endTime: (r.end_time as string) ?? "",
+  props: (r.props as string) ?? "",
+  people: (r.people as string) ?? "",
+  notes: (r.notes as string) ?? "",
 });
 
 /* ------------------------------------------------------------------ settings, rules, team */
@@ -175,6 +185,8 @@ export async function listTeam(): Promise<TeamMember[]> {
       roles: ((t?.roles as TeamRole[]) ?? []),
       workingDays: (t?.working_days as number[]) ?? DEFAULT_WORKING_DAYS,
       active: Boolean(a.active) && (t ? Boolean(t.active) : true),
+      capacityHours: t?.capacity_hours == null ? null : Number(t.capacity_hours),
+      digestOptOut: Boolean(t?.digest_opt_out),
     };
   });
 }
@@ -182,7 +194,16 @@ export async function listTeam(): Promise<TeamMember[]> {
 export async function saveTeamMember(m: TeamMember) {
   const { error } = await db()
     .from("team_members")
-    .upsert({ email: m.email, display_name: m.name, roles: m.roles, working_days: m.workingDays, active: m.active, updated_at: new Date().toISOString() });
+    .upsert({
+      email: m.email,
+      display_name: m.name,
+      roles: m.roles,
+      working_days: m.workingDays,
+      active: m.active,
+      ...(m.capacityHours !== undefined && { capacity_hours: m.capacityHours }),
+      ...(m.digestOptOut !== undefined && { digest_opt_out: m.digestOptOut }),
+      updated_at: new Date().toISOString(),
+    });
   fail(error);
 }
 

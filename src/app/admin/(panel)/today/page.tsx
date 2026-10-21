@@ -1,5 +1,8 @@
 import { AdminTitle } from "@/components/admin/AdminShell";
 import { TodayBoard } from "@/components/admin/ops/TodayBoard";
+import { WarningsPanel } from "@/components/admin/ops/WarningsPanel";
+import { loadWarnings } from "@/lib/admin/team-data";
+import { daysFrom } from "@/lib/ops/team";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listClients, listItems, listShoots, listTasks, listTeam } from "@/lib/admin/ops-data";
 import { addDays } from "@/lib/engine/dates";
@@ -18,9 +21,12 @@ export default async function Today({ searchParams }: { searchParams: Promise<{ 
     listClients(),
     listTeam(),
   ]);
+  const days = daysFrom(today, 4);
+  const warnings = await loadWarnings({ from: days[0], to: days[3] }, days);
   return (
     <>
       <AdminTitle title="Today" intro="What needs doing now, across every client." />
+      <WarningsPanel warnings={warnings} title="Warnings for the next few days" />
       <TodayBoard
         tasks={tasks}
         items={items}

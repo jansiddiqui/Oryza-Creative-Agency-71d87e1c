@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveRulesAction, saveTeamMemberAction, saveWorkingDaysAction } from "@/app/admin/(panel)/settings/actions";
+import { saveRulesAction, saveTeamMemberAction, saveWorkingDaysAction, saveWorkloadSettingsAction } from "@/app/admin/(panel)/settings/actions";
 import type { TeamMember } from "@/lib/admin/ops-data";
 import { TEAM_ROLES, type DeadlineRule, type TeamRole } from "@/lib/ops/types";
 import { Notice } from "../AdminShell";
@@ -31,7 +31,9 @@ function DayPicker({ value, onChange, name }: { value: number[]; onChange: (v: n
 }
 
 /** Owner settings: deadline rules (D-n offsets), working days, team roles. */
-export function SettingsView({ rules: initialRules, workingDays: initialDays, team: initialTeam }: { rules: DeadlineRule[]; workingDays: number[]; team: TeamMember[] }) {
+export function SettingsView({ rules: initialRules, workingDays: initialDays, team: initialTeam, estimates: initialEst, capacity: initialCap }: { rules: DeadlineRule[]; workingDays: number[]; team: TeamMember[]; estimates: Record<string, number>; capacity: number }) {
+  const [est, setEst] = useState(initialEst);
+  const [cap, setCap] = useState(String(initialCap));
   const router = useRouter();
   const [rules, setRules] = useState(initialRules);
   const [days, setDays] = useState(initialDays);
@@ -53,6 +55,25 @@ export function SettingsView({ rules: initialRules, workingDays: initialDays, te
           <DayPicker name="Working days" value={days} onChange={setDays} />
           <button type="button" className={btn} onClick={async () => done(await saveWorkingDaysAction(days), "Working days saved. New and moved tasks use them.")}>Save</button>
           <p className="w-full text-[13px] text-muted">A task due on a non-working day moves to the working day before. Publishing dates never move.</p>
+        </div>
+      </Section>
+
+      <Section title="Workload" id="workload">
+        <div className="space-y-4 rounded-2xl border border-line bg-paper p-5">
+          <p className="max-w-2xl text-[14px] text-muted">Estimated hours per task step feed the workload view and the over-capacity warnings. A person can have their own hours per day below; otherwise the default applies.</p>
+          <label className="block max-w-[220px] text-[12px] font-semibold">
+            Default hours per person per day
+            <input type="number" min={1} max={16} step={0.5} value={cap} onChange={(e) => setCap(e.target.value)} className={`mt-1 w-full ${field}`} />
+          </label>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {Object.keys(est).sort((a, b) => (a === "default" ? 1 : b === "default" ? -1 : a.localeCompare(b))).map((step) => (
+              <label key={step} className="text-[12px] font-semibold">
+                {step === "default" ? "Any other step" : step.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase())} (h)
+                <input type="number" min={0} max={24} step={0.25} value={est[step]} onChange={(e) => setEst({ ...est, [step]: Number(e.target.value) })} className={`mt-1 w-full ${field}`} />
+              </label>
+            ))}
+          </div>
+          <button type="button" className={btn} onClick={async () => done(await saveWorkloadSettingsAction(est, Number(cap)), "Workload settings saved.")}>Save workload settings</button>
         </div>
       </Section>
 
@@ -109,7 +130,12 @@ export function SettingsView({ rules: initialRules, workingDays: initialDays, te
                   <p className="mb-1 text-[12px] font-semibold">Working days</p>
                   <DayPicker name={`Working days for ${m.email}`} value={m.workingDays} onChange={(v) => set({ workingDays: v })} />
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 lg:col-span-4">
+                  <label className="text-[12px] font-semibold">
+                    Hours per day
+                    <input type="number" min={1} max={16} step={0.5} placeholder="Default" value={m.capacityHours ?? ""} onChange={(e) => set({ capacityHours: e.target.value === "" ? null : Number(e.target.value) })} className={`ml-2 w-24 ${field}`} />
+                  </label>
+                  <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={!m.digestOptOut} onChange={(e) => set({ digestOptOut: !e.target.checked })} /> Morning digest email</label>
                   <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={m.active} onChange={(e) => set({ active: e.target.checked })} /> Gets tasks</label>
                   <button type="button" className={btnSmall} onClick={async () => done(await saveTeamMemberAction(m), `${m.name} saved.`)}>Save</button>
                 </div>

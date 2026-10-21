@@ -105,9 +105,9 @@ export function CalendarBoard(p: CalendarProps) {
   };
 
   const ShootMarker = ({ s }: { s: ShootRow }) => (
-    <p className="flex items-center gap-1 rounded-md border border-dashed border-ink/40 px-1.5 py-0.5 text-[11px] font-semibold">
-      <ClientDot colour={clientById.get(s.clientId)?.colour ?? "#000"} size={8} /> Shoot · {clientById.get(s.clientId)?.name}
-    </p>
+    <Link href={`/admin/shoots/${s.id}`} className="flex items-center gap-1 rounded-md border border-dashed border-ink/40 px-1.5 py-0.5 text-[11px] font-semibold hover:border-ink">
+      <ClientDot colour={clientById.get(s.clientId)?.colour ?? "#000"} size={8} /> Shoot{s.startTime && ` ${s.startTime}`} · {clientById.get(s.clientId)?.name}
+    </Link>
   );
 
   const DayCell = ({ date, inMonth = true, tall }: { date: string; inMonth?: boolean; tall?: boolean }) => {
@@ -217,7 +217,7 @@ export function CalendarBoard(p: CalendarProps) {
               <Link href={`/admin/clients/${sel.clientId}`} className="font-semibold text-ink underline-offset-4 hover:underline">{clientById.get(sel.clientId)?.name}</Link>
               · <PlatformGlyph platform={sel.platform} /> {formatLabel(sel.format)} · {fmtDay(sel.date)} {sel.time}
             </p>
-            <h3 id="item-h" className="mt-2 text-[18px] font-semibold">{sel.title}</h3>
+            <h3 id="item-h" className="mt-2 text-[18px] font-semibold"><Link href={`/admin/items/${sel.id}`} className="underline-offset-4 hover:underline">{sel.title}</Link></h3>
             {sel.hook && <p className="mt-1 text-[14px] text-ink-soft">{sel.hook}</p>}
             <p className="mt-2"><StageBadge stage={sel.stage} />{sel.clientApproved && <span className="ml-2 text-[12px] font-semibold text-gold-700">Client approved</span>}</p>
             {sel.complianceNote && <p className="mt-3 rounded-lg border border-gold-500/40 bg-gold-100/50 px-3 py-2 text-[13px]"><span className="font-semibold">Compliance:</span> {sel.complianceNote}</p>}

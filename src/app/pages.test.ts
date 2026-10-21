@@ -11,7 +11,7 @@ function pages() {
       if (e.isDirectory()) walk(join(dir, e.name));
       else if (e.name === "page.tsx") {
         const parts = relative(appDir, dir).split(sep).filter(Boolean);
-        if (parts[0] === "admin") continue; // private, noindex — no canonical
+        if (parts[0] === "admin" || parts[0] === "share") continue; // private, noindex — no canonical
         const route = "/" + parts.filter((p) => !p.startsWith("(")).join("/");
         out.push({ route, src: readFileSync(join(dir, e.name), "utf8") });
       }
