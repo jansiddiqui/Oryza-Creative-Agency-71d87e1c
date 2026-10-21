@@ -10,14 +10,14 @@ const root = process.cwd();
 const read = (p: string) => readFileSync(join(root, p), "utf8");
 const staticImports = (src: string) => [...src.matchAll(/^import\s[^;]*?from\s+"([^"]+)"/gm)].map((m) => m[1]);
 
-const ENGINES = ["school-engine", "medical-engine", "real-estate-engine", "political-engine", "restaurant-engine", "coaching-engine"];
-const PLAYBOOKS = ["school", "hospital", "doctor", "real-estate", "political", "restaurant", "coaching"];
+const ENGINES = ["school-engine", "medical-engine", "real-estate-engine", "political-engine", "restaurant-engine", "coaching-engine", "retail-engine", "wellness-engine", "style-engine"];
+const PLAYBOOKS = ["school", "hospital", "doctor", "real-estate", "political", "restaurant", "coaching", "retail", "wellness", "style"];
 
 describe("planner bundle boundaries", () => {
   it("the planner registry loads every category with a dynamic import only", () => {
     const src = read("src/components/planner/configs.ts");
     for (const i of staticImports(src)) expect(i, i).not.toMatch(/engine|playbooks|categories\//);
-    expect(src.match(/import\("\.\/categories\//g)?.length).toBeGreaterThanOrEqual(7);
+    expect(src.match(/import\("\.\/categories\//g)?.length).toBeGreaterThanOrEqual(10);
   });
 
   it("the plan builder and plan view never import an engine or a playbook statically", () => {
@@ -35,6 +35,9 @@ describe("planner bundle boundaries", () => {
       "political-leaders.ts": ["political-engine"],
       "restaurants-cafes.ts": ["restaurant-engine"],
       "coaching-institutes.ts": ["coaching-engine"],
+      "retail-showrooms.ts": ["retail-engine"],
+      "gyms-salons.ts": ["wellness-engine"],
+      "interiors-fashion-jewellery.ts": ["style-engine"],
     };
     const dir = "src/components/planner/categories";
     for (const f of readdirSync(join(root, dir))) {
@@ -53,6 +56,9 @@ describe("industry page boundaries", () => {
     "political-leaders": { samples: "political", playbooks: ["political"] },
     "restaurants-cafes": { samples: "restaurant", playbooks: ["restaurant"] },
     "coaching-institutes": { samples: "coaching", playbooks: ["coaching"] },
+    "retail-showrooms": { samples: "retail", playbooks: ["retail"] },
+    "gyms-salons": { samples: "wellness", playbooks: ["wellness"] },
+    "interiors-fashion-jewellery": { samples: "style", playbooks: ["style"] },
   };
   it.each(Object.entries(pages))("/industries/%s imports only its own sample and playbook", (slug, own) => {
     const imports = staticImports(read(`src/app/(site)/industries/${slug}/page.tsx`));

@@ -12,6 +12,9 @@ export const plannerLoaders: Record<string, () => Promise<PlannerConfig>> = {
   "political-leaders": () => import("./categories/political-leaders").then((m) => m.config),
   "restaurants-cafes": () => import("./categories/restaurants-cafes").then((m) => m.config),
   "coaching-institutes": () => import("./categories/coaching-institutes").then((m) => m.config),
+  "retail-showrooms": () => import("./categories/retail-showrooms").then((m) => m.config),
+  "gyms-salons": () => import("./categories/gyms-salons").then((m) => m.config),
+  "interiors-fashion-jewellery": () => import("./categories/interiors-fashion-jewellery").then((m) => m.config),
 };
 
 /** Short labels for the categories with a live planner (for copy that lists them). */
@@ -23,4 +26,7 @@ export const plannerLabels: Record<string, string> = {
   "political-leaders": "Political leaders",
   "restaurants-cafes": "Restaurants & cafés",
   "coaching-institutes": "Coaching institutes",
+  "retail-showrooms": "Retail & showrooms",
+  "gyms-salons": "Gyms, salons & spas",
+  "interiors-fashion-jewellery": "Interiors, fashion & jewellery",
 };

@@ -82,7 +82,7 @@ export const categories: Category[] = [
     name: "Retail & showrooms",
     audience: "Shoppers comparing options nearby",
     feeling: "They have exactly what I want, at a fair price.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "add", "core", "add", "skip", "skip", "add"),
   },
   {
@@ -90,7 +90,7 @@ export const categories: Category[] = [
     name: "Gyms, salons & spas",
     audience: "People investing in how they look and feel",
     feeling: "I will look and feel better here.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "add", "core", "add", "core", "add", "skip", "skip", "add"),
   },
   {
@@ -122,7 +122,7 @@ export const categories: Category[] = [
     name: "Interiors, fashion & jewellery",
     audience: "Buyers looking for taste, trends and craftsmanship",
     feeling: "This is the look I want.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "add", "core", "add", "skip", "skip", "core"),
   },
 ];
