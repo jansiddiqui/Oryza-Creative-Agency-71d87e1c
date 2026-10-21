@@ -60,6 +60,9 @@ export function DayCard({ day, compact, headingLevel = 3 }: { day: PlanDay; comp
           {day.weekday}, {fmtDate(day.date)}
         </p>
       </header>
+      {day.notice && (
+        <p className="mt-3 rounded-xl border border-gold-500/40 bg-gold-100 px-4 py-2.5 text-[13px] font-semibold text-gold-700">{day.notice}</p>
+      )}
       {day.shoot && (
         <div className="mt-3 rounded-xl bg-ink px-4 py-3 text-paper">
           <p className="flex items-center gap-2 text-[13px] font-semibold text-gold-300"><CameraIcon size={16} />{day.shoot.label}</p>

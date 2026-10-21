@@ -60,6 +60,34 @@ describe("shared engine core", () => {
     expect(p.days.some((d) => d.items.some((x) => x.templateId === "LOUD"))).toBe(false);
   });
 
+  it("checks day:… tags against the day a template would be scheduled on", () => {
+    const daily = t({ id: "DAILY", format: "post", pillar: "access", title: "Odd-day post", hook: "x", cta: "y", repeatable: true, blockedBy: ["day:even"], boosts: Array(20).fill("primary:footfall") });
+    const config = { ...hospitalConfig, playbook: { ...hospitalConfig.playbook, templates: [daily, ...hospitalConfig.playbook.templates] }, dayTags: () => (day: number) => new Set(day % 2 ? [] : ["day:even"]) };
+    const days = generatePlan(config, hospital).days.filter((d) => d.items.some((x) => x.templateId === "DAILY")).map((d) => d.day);
+    expect(days.length).toBeGreaterThan(0);
+    expect(days.every((d) => d % 2 === 1)).toBe(true);
+  });
+
+  it("keeps closed days free of reels, posts, stories and shoots, and drops events the category mutes", () => {
+    const config = { ...hospitalConfig, closedDays: () => [1, 2, 15, 16], keepEvent: (_: unknown, e: { kind: string }) => e.kind !== "talk" };
+    const p = generatePlan(config, { ...hospital, events: [{ kind: "camp", date: "2026-11-10" }, { kind: "talk", date: "2026-11-20" }] });
+    for (const d of [1, 2, 15, 16]) expect(p.days[d - 1].items.filter((x) => x.platform === "instagram")).toEqual([]);
+    expect(p.shootDays.map((s) => s.day)).not.toContain(1);
+    expect(JSON.stringify(p.days)).not.toContain("Awareness talk");
+    const count = (f: string) => p.days.reduce((n, d) => n + d.items.filter((x) => x.platform === "instagram" && x.format === f).length, 0);
+    expect(count("reel")).toBe(packages.growth.reels);
+    expect(count("post")).toBe(packages.growth.posts);
+  });
+
+  it("fills a template's variables from a list of variable sets, and skips templates whose list is empty", () => {
+    const multi = t({ id: "MULTI", format: "post", pillar: "access", title: "{a} at {b}", hook: "x", cta: "y", boosts: Array(20).fill("primary:footfall") });
+    const base = { ...hospitalConfig, playbook: { ...hospitalConfig.playbook, templates: [multi, ...hospitalConfig.playbook.templates] } };
+    const filled = generatePlan({ ...base, templateLists: () => ({ MULTI: { key: "a", list: [{ a: "One", b: "Two" }], mode: "cycle" as const } }) }, hospital);
+    expect(filled.days.some((d) => d.items.some((x) => x.title === "One at Two"))).toBe(true);
+    const empty = generatePlan({ ...base, templateLists: () => ({ MULTI: { key: "a", list: [], mode: "cycle" as const } }) }, hospital);
+    expect(empty.days.some((d) => d.items.some((x) => x.templateId === "MULTI"))).toBe(false);
+  });
+
   it("gives every shoot day a shot list and keeps reels after the first shoot", () => {
     const p = generatePlan(hospitalConfig, hospital);
     expect(p.shootDays.length).toBe(2);

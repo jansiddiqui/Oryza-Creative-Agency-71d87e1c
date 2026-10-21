@@ -113,13 +113,27 @@ export interface CategoryConfig<A extends BaseAnswers> {
   /** Variables available to every template ({name}, {city}…). */
   vars: (a: A) => Record<string, string>;
   eventName: (e: { kind: string; label?: string }) => string;
-  /** Templates that take their variable from a list: consumed once each, or cycled. */
-  templateLists?: (a: A) => Record<string, { key: string; list: string[]; mode: "consume" | "cycle" }>;
+  /**
+   * Templates that take their variables from a list: consumed once each, or cycled. A list item is either one
+   * value (stored under key) or a set of variables. A template whose list is empty is never scheduled.
+   */
+  templateLists?: (a: A) => Record<string, TemplateList>;
   /** May templates that show identifiable faces be used? */
   facesAllowed: (a: A) => boolean;
   /** Compliance: templates whose wording matches are never scheduled. */
   bannedWording?: RegExp;
   pins: (ctx: PinContext<A>) => void;
+  /**
+   * Day-dependent tags (e.g. "day:mcc"). Template requires/blockedBy entries starting with "day:" are checked
+   * against the tags of the day the template would be scheduled on.
+   */
+  dayTags?: (a: A) => (day: number) => Set<string>;
+  /** Events the category does not promote at all (e.g. in an election silence period). */
+  keepEvent?: (a: A, e: PlanEvent) => boolean;
+  /** Plan days on which no free reel, post, story or shoot is scheduled (pinned items may still be placed on them). */
+  closedDays?: (a: A) => number[];
+  /** Last pass over the finished calendar before the summaries (e.g. per-day notes, removing items). */
+  finalize?: (ctx: BuildContext<A>) => void;
   shootStory: { id: string; title: string; hook: string };
   pinnedStories: (ctx: BuildContext<A>) => void;
   platformText: {
@@ -144,6 +158,17 @@ export interface CategoryConfig<A extends BaseAnswers> {
   snapshot: (ctx: SummaryContext<A>) => { label: string; value: string }[];
   /** Compliance notes shown with the plan (omitted from the plan when absent). */
   compliance?: (ctx: SummaryContext<A>) => string[];
+}
+
+/**
+ * A template's list of variables. With `shared`, every template naming the same pool draws from one list:
+ * each item is used at most `maxUses` times in the month, never twice in the same format.
+ */
+export interface TemplateList {
+  key: string;
+  list: (string | Record<string, string>)[];
+  mode: "consume" | "cycle";
+  shared?: { pool: string; maxUses: number };
 }
 
 export function fill(text: string, vars: Record<string, string>): string {
@@ -171,6 +196,10 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   const has = (tag: string) => tags.has(tag);
   const baseVars = config.vars(a);
   const inWindow = (iso?: string) => (iso ? dayOf(a.startDate, iso) : 0);
+  const dayTagsOf = config.dayTags?.(a);
+  const dayHas = (day: number, tag: string) => dayTagsOf?.(day).has(tag) ?? false;
+  const tagOk = (t: Template, day: number) =>
+    !t.requires?.some((r) => !(r.startsWith("day:") ? dayHas(day, r) : has(r))) && !t.blockedBy?.some((b) => (b.startsWith("day:") ? dayHas(day, b) : has(b)));
   const valid = (d: number) => d >= 1 && d <= DAYS;
 
   // ---------- 1. Pillar targets ----------
@@ -184,11 +213,16 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   const shootCount = a.shoot === "own" ? 0 : a.shoot === "1" ? 1 : a.shoot === "2" ? Math.min(2, pkg.shoots) : pkg.shoots;
   const eventDays: PlanEvent[] = a.events
     .map((e) => ({ ...e, day: inWindow(e.date), name: config.eventName(e) }))
-    .filter((e) => valid(e.day))
+    .filter((e) => valid(e.day) && (config.keepEvent?.(a, e) ?? true))
     .sort((x, y) => x.day - y.day);
   const shootDays: number[] = [];
-  if (shootCount >= 1) shootDays.push(1);
-  const extraCandidates = [...eventDays.map((e) => e.day).filter((d) => d > 3), 15, 22, 8];
+  const closed = new Set(config.closedDays?.(a) ?? []);
+  if (shootCount >= 1) {
+    let first = 1;
+    while (closed.has(first) && first < DAYS) first++;
+    shootDays.push(first);
+  }
+  const extraCandidates = [...eventDays.map((e) => e.day).filter((d) => d > 3), 15, 22, 8].filter((d) => !closed.has(d));
   for (const d of extraCandidates) {
     if (shootDays.length >= shootCount) break;
     if (shootDays.every((s) => Math.abs(s - d) >= 5)) shootDays.push(d);
@@ -235,6 +269,14 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     return out;
   };
   const pinCtx: PinContext<A> = { a, has, vars: baseVars, valid, inWindow, eventDays, firstReelDay, pin, pinned, occasions };
+  if (closed.size)
+    for (const s of slots) {
+      const lo = s.format === "reel" ? firstReelDay : 2;
+      for (let step = 0; closed.has(s.day) && step < DAYS; step++) {
+        const options = [s.day - step, s.day + step].filter((d) => d >= lo && d <= DAYS && !closed.has(d));
+        if (options.length) s.day = options[0];
+      }
+    }
   config.pins(pinCtx);
 
   // Move free slots off days already holding a pinned item of the same format.
@@ -242,7 +284,7 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     const clash = () => slots.some((o) => o !== s && o.format === s.format && o.day === s.day);
     for (let step = 1; clash() && step < DAYS; step++) {
       const options = [s.day + step, s.day - step].filter(
-        (d) => d >= (s.format === "reel" ? firstReelDay : 2) && d <= DAYS && !slots.some((o) => o.format === s.format && o.day === d),
+        (d) => d >= (s.format === "reel" ? firstReelDay : 2) && d <= DAYS && !closed.has(d) && !slots.some((o) => o.format === s.format && o.day === d),
       );
       if (options.length) s.day = options[0];
     }
@@ -252,6 +294,15 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   // ---------- 4. Fill free slots by score ----------
   const lists = config.templateLists?.(a) ?? {};
   const listIdx: Record<string, number> = {};
+  const poolUses: Record<string, { n: number; formats: Set<string> }[]> = {};
+  /** The least-used item of a shared pool this template may still use, or -1. */
+  const poolPick = (t: Template, l: TemplateList) => {
+    if (!l.shared) return -1;
+    const st = (poolUses[l.shared.pool] ??= l.list.map(() => ({ n: 0, formats: new Set<string>() })));
+    let best = -1;
+    for (let i = 0; i < st.length; i++) if (st[i].n < l.shared.maxUses && !st[i].formats.has(t.format) && (best < 0 || st[i].n < st[best].n)) best = i;
+    return best;
+  };
   const used: Record<string, number> = {};
   const lastUse: Record<string, number> = {};
   for (const s of slots.filter((x) => x.template)) {
@@ -262,12 +313,13 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   const eligible = (t: Template, day: number, ignoreCooldown = false) => {
     if (t.pinnedOnly) return false;
     if (t.minDay && day < t.minDay) return false;
-    if (t.requires?.some((r) => !has(r))) return false;
-    if (t.blockedBy?.some((b) => has(b))) return false;
+    if (!tagOk(t, day)) return false;
     if (t.faces && !facesOk) return false;
     if (breaksWording(t, config.bannedWording)) return false;
     const l = lists[t.id];
+    if (l && !l.list.length) return false;
     if (l?.mode === "consume" && (listIdx[t.id] ?? 0) >= l.list.length) return false;
+    if (l?.shared && poolPick(t, l) < 0) return false;
     if (a.shoot === "own" && t.who === "Client arranges") return false;
     if (!ignoreCooldown && lastUse[t.id] !== undefined) {
       const gap = day - lastUse[t.id];
@@ -292,9 +344,18 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     s.template = best;
     s.vars = {};
     const l = lists[best.id];
-    if (l && l.list.length) {
+    if (l?.shared) {
+      const i = poolPick(best, l);
+      const v = l.list[i];
+      if (typeof v === "string") s.vars[l.key] = v;
+      else Object.assign(s.vars, v);
+      poolUses[l.shared.pool][i].n++;
+      poolUses[l.shared.pool][i].formats.add(best.format);
+    } else if (l && l.list.length) {
       const i = listIdx[best.id] ?? 0;
-      s.vars[l.key] = l.mode === "consume" ? l.list[i] : l.list[i % l.list.length];
+      const v = l.mode === "consume" ? l.list[i] : l.list[i % l.list.length];
+      if (typeof v === "string") s.vars[l.key] = v;
+      else Object.assign(s.vars, v);
       listIdx[best.id] = i + 1;
     }
     used[best.pillar] = (used[best.pillar] ?? 0) + 1;
@@ -326,16 +387,17 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
       time: TIME[t.format],
       pinnedReason: s.pinnedReason,
     };
-    if (t.note) item.note = t.note;
+    if (t.note) item.note = fill(t.note, vars);
     D(s.day).items.push(item);
   }
 
   const story: BuildContext<A>["story"] = (d, id, title, hook, reason) => {
     if (!valid(d)) return;
+    if (closed.has(d) && !reason) return;
     if (D(d).items.some((x) => x.format === "story" && x.title === title)) return;
     const t = tpl(id);
     const item: PlanItem = { templateId: id, platform: "instagram", format: "story", title, hook, time: TIME.story, pinnedReason: reason, who: t.who };
-    if (t.note) item.note = t.note;
+    if (t.note) item.note = fill(t.note, baseVars);
     D(d).items.push(item);
   };
   const add: BuildContext<A>["add"] = (d, item) => {
@@ -368,8 +430,8 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
     (t) =>
       t.format === "story" &&
       !t.pinnedOnly &&
-      !t.requires?.some((r) => !has(r)) &&
-      !t.blockedBy?.some((b) => has(b)) &&
+      !t.requires?.some((r) => !r.startsWith("day:") && !has(r)) &&
+      !t.blockedBy?.some((b) => !b.startsWith("day:") && has(b)) &&
       !(t.faces && !facesOk) &&
       !breaksWording(t, config.bannedWording),
   );
@@ -377,10 +439,11 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   for (const day of days) {
     const wd = new Date(day.date + "T00:00:00Z").getUTCDay();
     const isStoryDay = pkg.storyDaysPerWeek >= 7 || [1, 3, 5, 6].includes(wd);
-    if (!isStoryDay || !rotation.length) continue;
+    if (!isStoryDay || !rotation.length || closed.has(day.day)) continue;
     let guard = 0;
     while (day.items.filter((x) => x.format === "story").length < pkg.storiesPerDay && guard++ < 20) {
       const t = rotation[rot++ % rotation.length];
+      if (dayTagsOf && !tagOk(t, day.day)) continue;
       story(day.day, t.id, fill(t.title, baseVars), fill(t.hook, baseVars));
     }
   }
@@ -423,6 +486,7 @@ export function generatePlan<A extends BaseAnswers>(config: CategoryConfig<A>, a
   if (sel.has("pinterest")) for (const d of [5, 12, 19, 26]) add(d, { templateId: "PIN", platform: "pinterest", format: "pin", title: text.pinterest, who: "Oryza", time: "8:00 pm" });
   if (sel.has("x")) for (const d of [3, 10, 17, 24]) add(d, { templateId: "X-P", platform: "x", format: "post", title: text.x, who: "Oryza", time: "11:00 am" });
 
+  config.finalize?.(ctx);
   const fmtOrder = ["reel", "post", "story"];
   for (const d of days)
     d.items.sort((x, y) => PLATFORM_ORDER.indexOf(x.platform) - PLATFORM_ORDER.indexOf(y.platform) || fmtOrder.indexOf(x.format) - fmtOrder.indexOf(y.format));

@@ -50,7 +50,7 @@ export const categories: Category[] = [
     name: "Real estate",
     audience: "Families buying a home and investors",
     feeling: "This is a safe, well-located investment.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "core", "core", "core", "add", "skip", "add"),
   },
   {
@@ -58,7 +58,7 @@ export const categories: Category[] = [
     name: "Political leaders",
     audience: "Voters, party workers and young citizens",
     feeling: "This person works for us and is reachable.",
-    plannerLive: false,
+    plannerLive: true,
     fit: f("core", "core", "core", "core", "skip", "add", "add", "core", "skip"),
   },
   {

@@ -63,6 +63,8 @@ export interface PlanDay {
   weekday: string;
   items: PlanItem[];
   shoot?: { label: string; shots: string[] };
+  /** A note for the whole day (e.g. Model Code of Conduct in force), shown once above its items. */
+  notice?: string;
 }
 
 export interface Plan {

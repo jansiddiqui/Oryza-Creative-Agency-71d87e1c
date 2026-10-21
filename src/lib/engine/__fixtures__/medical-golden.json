@@ -1,0 +1,19 @@
+{
+  "hospital:base": "69764c920dd03f4c1c9f2291d939a94a18d9ac55eec068169678142a1a254e21",
+  "hospital:starter": "9ca98059c975131827fcc2bdba41e71bb8dd5c9fc68eb05f02a9eee98ce5ae94",
+  "hospital:premium": "3903549e04cb7700484f52f5c5146ecfa78cdc9ce06ff4773db9bacd24e361e7",
+  "hospital:offCamera": "e7a6bf7e55d37a9561908dca878b6b524f66abb5db52529d752454064b89872c",
+  "hospital:ownPhotos": "e2954087669caaf34221701e818faee7c37afdf0866545eddc00710d0361fe29",
+  "hospital:allPlatforms": "c2dc6abee0d851d8d208246d4e5c323ad78e6d495ad49bd166b0dce32679bd5e",
+  "hospital:september": "6a8b6736ff82996984fe168d08e544d3c705403d321c61b873cf9909bac1fa51",
+  "hospital:newYear": "079f9d56e66b3fcde8825d5d292cb00a369d3c666cf1b5f9d1c9427ae20b537c",
+  "hospital:minimal": "66d2abd935aef1a94bed23a140068fd500552ddba82fcdb7da10cd9221cbae5d",
+  "doctor:base": "c85dea05dec4dc031fa170c58e09c6560c383bbf67fb07db358e0a866748926a",
+  "doctor:starter": "2a1b19dd01ea0f893d26e8d5b340759973e6228945e51d39f8b9573b592c19d8",
+  "doctor:premium": "7f95cbc7b23a3d236d344b560f912a2da2f6da9d0baead103f36f2667e11ab93",
+  "doctor:discovery": "e71acf8504b862e08ce38113a7e429eef35bac976343ee787a45a592a9a3a675",
+  "doctor:allPlatforms": "67d06caab98e818550fd98b6af0101d58b13208df1447117c5c3dc568cfe9948",
+  "doctor:oncology": "faeca8e74c8db35d370409e34dc44a0a9dded6f4017e6dcada18f246f82e62b7",
+  "doctor:badQuals": "2c300d9f26fffa0a31a3500979b3517c4574bf79e88192d66c5372ecc16d1530",
+  "doctor:minimal": "02a4a6237a8d26236915dcd54337f56a8462886e7413bae66034853fc54b0814"
+}
