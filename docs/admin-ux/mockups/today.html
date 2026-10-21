@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Today — Oryza admin mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+</head>
+<body data-page="today" data-title="Today">
+<div id="page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Good morning, Jan</h1>
+      <p class="meta" style="margin:4px 0 0">Tuesday 10 November · 3 clients active</p>
+    </div>
+    <div class="seg" role="group" aria-label="Whose work">
+      <button aria-pressed="true" data-who="me">My work</button><button aria-pressed="false" data-who="all">Everyone</button>
+    </div>
+  </div>
+
+  <div class="stats" role="group" aria-label="Filter the list">
+    <button class="stat danger" aria-pressed="false" data-f="overdue"><span class="l">Overdue</span><span class="n">4</span></button>
+    <button class="stat" aria-pressed="true" data-f="today"><span class="l">Due today</span><span class="n">9</span></button>
+    <button class="stat" aria-pressed="false" data-f="client"><span class="l">Awaiting client</span><span class="n">6</span></button>
+    <button class="stat" aria-pressed="false" data-f="shoot"><span class="l">Shoots today</span><span class="n">1</span></button>
+    <button class="stat" aria-pressed="false" data-f="leads"><span class="l">New leads</span><span class="n">2</span></button>
+  </div>
+
+  <div class="card card-pad row wrap" style="margin-bottom:16px;border-color:#f0c8c3;background:#fff8f7">
+    <span class="badge b-danger plain">3 warnings</span>
+    <span class="grow">Shoot clash on Mon 16 Nov · Design team over capacity on Wed and Fri</span>
+    <a class="btn btn-ghost btn-sm" href="#">Review</a>
+  </div>
+
+  <div class="split">
+    <section aria-labelledby="list-h">
+      <h2 id="list-h" class="sr-only">Tasks</h2>
+      <div class="list" id="list"></div>
+      <p class="mock-note">Tap a title to open the post in a drawer (sheet on phones). Tick to mark done — a toast offers Undo. Cards above filter this list.</p>
+    </section>
+    <aside class="stack">
+      <div class="card">
+        <div class="card-head"><h2 class="section-title">Publishing today</h2><span class="meta">3</span></div>
+        <div class="card-pad stack" style="padding-top:12px">
+          <div class="row"><span class="cdot" style="background:#2f6b4f"></span><span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">1:30 pm · Sample Clinic at a glance</span><span class="badge b-violet">Scheduled</span></div>
+          <div class="row"><span class="cdot" style="background:#8f5e0a"></span><span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">1:30 pm · How we keep your child safe</span><span class="badge b-violet">Scheduled</span></div>
+          <div class="row"><span class="cdot" style="background:#5b4a8a"></span><span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">8:30 pm · Thali / combo guide</span><span class="badge b-info">In production</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 class="section-title">Shoot today</h2><a class="btn btn-ghost btn-sm" href="#">Open</a></div>
+        <div class="card-pad"><b>Sample Café</b> · 11:00–12:30 · Civil Lines<div class="meta">Shoot team · 3 of 8 shots ticked</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 class="section-title">New leads</h2><a class="btn btn-ghost btn-sm" href="leads.html">All</a></div>
+        <div class="card-pad stack" style="padding-top:12px"><div><b>Asha Verma</b> · Sample Convent School<div class="meta">Plan builder · 2 h ago</div></div><div><b>Rohit Gupta</b> · Gupta Dental<div class="meta">Contact form · yesterday</div></div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<script src="shell.js"></script>
+<script>
+const groups = [
+  { k: "overdue", head: ["#2f6b4f", "Sample Clinic", "Reel · A day in our OPD · publishes Wed 11 Nov"], tasks: [["Script", "Overdue · was due Fri 6 Nov", "overdue"], ["Client approval", "Overdue · was due Mon 9 Nov · waiting for Dr Verma", "overdue"]] },
+  { k: "overdue", head: ["#5b4a8a", "Sample Café", "Reel · How to reach Sample Café · publishes Wed 11 Nov"], tasks: [["Script", "Overdue · was due Fri 6 Nov", "overdue"], ["Shoot", "Overdue · client sends footage", "overdue"]] },
+  { k: "today", head: ["#2f6b4f", "Sample Clinic", "Reel · How to reach us and where to park · publishes Wed 11 Nov"], tasks: [["Edit", "Due today 6:00 pm · Design team", "today"], ["Client approval", "Due today 1:00 pm", "today", "client"], ["Schedule", "Due today 6:00 pm · Community", "today"]] },
+  { k: "today", head: ["#8f5e0a", "Sample Public School", "Post · How we keep your child safe · publishes today"], tasks: [["Publish", "Today 1:30 pm · Community", "today"], ["Schedule", "Due today 6:00 pm", "today"]] },
+  { k: "today", head: ["#5b4a8a", "Sample Café", "Story · Question box: ask our kitchen · publishes today"], tasks: [["Prepare", "Due today · Design team", "today"], ["Publish", "Through the day · Community", "today"]] },
+  { k: "client", head: ["#2f6b4f", "Sample Clinic", "Week of Mon 16 Nov · 4 posts sent for approval"], tasks: [["Waiting for the client", "Sent 9 Nov, 10:30 am · no answer yet · WhatsApp reminder ready", "today", "client"]] },
+];
+let filter = "today";
+const list = document.getElementById("list");
+function render() {
+  const shown = groups.filter((g) => filter === "all" || g.k === filter || (filter === "client" && g.tasks.some((t) => t[3] === "client")));
+  if (!shown.length) {
+    list.innerHTML = `<div class="empty"><div class="ill">✓</div><h3>Nothing here</h3>${filter === "shoot" ? "One shoot today — open it from the panel on the right." : "New leads are in the panel on the right."}</div>`;
+    return;
+  }
+  list.innerHTML = shown.map((g) => `
+    <div class="group-head"><span class="cdot" style="background:${g.head[0]}"></span>${g.head[1]}<span class="meta" style="font-weight:500">· ${g.head[2]}</span></div>
+    ${g.tasks.map((t) => `
+      <div class="task ${t[2]}">
+        <label class="check-hit"><input type="checkbox" class="check" aria-label="Mark ${t[0]} done"></label>
+        <button class="open"><span class="t">${t[0]}</span><div class="meta">${t[1]}</div></button>
+        <div class="acts"><button class="btn btn-ghost btn-sm">Start</button><button class="btn btn-ghost btn-sm">Blocked</button><button class="icon-btn more-btn" aria-label="More actions: Start, Blocked, Add note">⋯</button></div>
+      </div>`).join("")}`).join("");
+  list.querySelectorAll(".open").forEach((b) => (b.onclick = () => openItem()));
+  list.querySelectorAll(".check").forEach((c) => (c.onchange = () => {
+    const row = c.closest(".task");
+    row.classList.toggle("done", c.checked);
+    toast(`${row.querySelector(".t").textContent} marked done`, () => { c.checked = false; row.classList.remove("done"); });
+  }));
+  list.querySelectorAll(".acts .btn").forEach((b) => (b.onclick = () => b.textContent === "Blocked" ? toast("Blocked — add a reason (inline field opens)") : toast("Started", () => {})));
+  list.querySelectorAll(".more-btn").forEach((b) => (b.onclick = () => toast("Action sheet: Start · Blocked · Add note · Open")));
+}
+document.querySelectorAll(".stat").forEach((s) => (s.onclick = () => {
+  const on = s.getAttribute("aria-pressed") !== "true";
+  document.querySelectorAll(".stat").forEach((x) => x.setAttribute("aria-pressed", "false"));
+  s.setAttribute("aria-pressed", String(on));
+  filter = on ? s.dataset.f : "all";
+  render();
+}));
+document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }));
+render();
+</script>
+</body>
+</html>

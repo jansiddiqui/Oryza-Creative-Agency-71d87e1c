@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Client — Oryza admin mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+<style>
+  .glance { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .glance a { text-decoration: none; }
+  .panel[hidden] { display: none; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 1023px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .prog { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .prog i { display: block; height: 100%; background: var(--success); }
+  .edit .ro { display: none; } .view .rw { display: none; }
+  .kvform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 767px) { .kvform { grid-template-columns: 1fr; } .kv { grid-template-columns: 110px 1fr; } .desk-actions { display: none; } }
+</style>
+</head>
+<body data-page="clients" data-title="Sample Clinic">
+<div id="page">
+  <div class="page-head" style="align-items:flex-start">
+    <div style="min-width:0">
+      <p class="meta" style="margin:0 0 4px"><a href="#" style="text-decoration:none">Clients</a> / Hospitals &amp; clinics</p>
+      <h1 class="page-title row"><span class="cdot" style="width:14px;height:14px;background:#2f6b4f"></span>Sample Clinic</h1>
+      <div class="glance">
+        <a href="#" data-go="content"><span class="badge b-danger">3 overdue</span></a>
+        <a href="#" data-go="approvals"><span class="badge b-warning">4 awaiting approval</span></a>
+        <span class="badge b-neutral">Growth · ₹25,000 / month</span>
+        <span class="badge b-info">Renews in 21 days</span>
+        <a href="#" data-go="billing"><span class="badge b-danger plain">₹25,000 overdue</span></a>
+      </div>
+    </div>
+    <div class="row desk-actions">
+      <a class="btn btn-secondary" href="#">Open plan</a>
+      <button class="btn btn-primary" id="send">Send for approval</button>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Client sections">
+    <button role="tab" aria-selected="true" data-t="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-t="content">Content <span class="count">127</span></button>
+    <button role="tab" aria-selected="false" data-t="approvals">Approvals <span class="count">4</span></button>
+    <button role="tab" aria-selected="false" data-t="shoots">Shoots <span class="count">2</span></button>
+    <button role="tab" aria-selected="false" data-t="reports">Reports</button>
+    <button role="tab" aria-selected="false" data-t="billing">Billing</button>
+    <button role="tab" aria-selected="false" data-t="activity">Activity</button>
+  </div>
+
+  <section class="panel" data-p="overview">
+    <div class="two">
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2 class="section-title">Next up</h2><a class="btn btn-ghost btn-sm" href="#" data-go="content">All content</a></div>
+          <div class="list" style="border:0;border-radius:0 0 12px 12px">
+            <div class="task overdue"><label class="check-hit"><input type="checkbox" class="check" aria-label="Mark Script done"></label><button class="open"><span class="t">Script · A day in our OPD</span><div class="meta">Overdue · Reel publishes Wed 11 Nov</div></button></div>
+            <div class="task today"><label class="check-hit"><input type="checkbox" class="check" aria-label="Mark Edit done"></label><button class="open"><span class="t">Edit · How to reach us and where to park</span><div class="meta">Today 6:00 pm · Design team</div></button></div>
+            <div class="task"><label class="check-hit"><input type="checkbox" class="check" aria-label="Mark Copy done"></label><button class="open"><span class="t">Copy · World Diabetes Day</span><div class="meta">Thu 12 Nov · Jan</div></button></div>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="row"><h2 class="section-title grow">Onboarding</h2><span class="meta num">6 of 9</span></div>
+          <div class="prog" style="margin:10px 0 12px"><i style="width:67%"></i></div>
+          <div class="stack" style="font-size:14px">
+            <label class="row"><input type="checkbox" class="check"> WhatsApp Business access received</label>
+            <label class="row"><input type="checkbox" class="check"> Website &amp; Google indexing access received</label>
+            <label class="row"><input type="checkbox" class="check"> Photo and video library shared</label>
+            <button class="btn btn-ghost btn-sm" style="justify-self:start">Show 6 done</button>
+          </div>
+        </div>
+      </div>
+      <div class="card view" id="details">
+        <div class="card-head"><h2 class="section-title">Details</h2><button class="btn btn-secondary btn-sm" id="edit">Edit</button></div>
+        <div class="card-pad">
+          <dl class="kv ro">
+            <dt>Contact</dt><dd>Dr Asha Verma</dd>
+            <dt>Phone</dt><dd><a href="#">+91 98000 00000</a> · <a href="#">WhatsApp</a></dd>
+            <dt>Email</dt><dd><a href="#">clinic@example.com</a></dd>
+            <dt>City</dt><dd>Lucknow</dd>
+            <dt>Package</dt><dd>Growth · 12 reels · 15 posts</dd>
+            <dt>Client since</dt><dd>Mon 2 Nov 2026</dd>
+            <dt>Renewal</dt><dd>Tue 1 Dec 2026</dd>
+            <dt>Notes</dt><dd>Prefers approvals on WhatsApp before noon.</dd>
+          </dl>
+          <form class="kvform rw" onsubmit="return false">
+            <label class="field"><span>Contact person</span><input class="input" value="Dr Asha Verma"></label>
+            <label class="field"><span>Phone / WhatsApp</span><input class="input" value="+91 98000 00000" inputmode="tel"></label>
+            <label class="field"><span>Email</span><input class="input" value="clinic@exampl" type="email" aria-invalid="true"><span class="error">Enter a full email address, e.g. name@clinic.in</span></label>
+            <label class="field"><span>City</span><input class="input" value="Lucknow"></label>
+            <label class="field"><span>Package</span><select class="select"><option>Growth</option></select></label>
+            <label class="field"><span>Renewal date</span><input class="input" type="date" value="2026-12-01"></label>
+            <label class="field" style="grid-column:1/-1"><span>Notes</span><textarea class="textarea">Prefers approvals on WhatsApp before noon.</textarea></label>
+            <div class="row" style="grid-column:1/-1"><button class="btn btn-primary" id="save">Save</button><button class="btn btn-ghost" id="cancel">Cancel</button><span class="hint">Draft kept if you leave this page</span></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-p="content" hidden>
+    <div class="row wrap" style="margin-bottom:12px"><div class="seg"><button aria-pressed="true">List</button><button aria-pressed="false">Board</button><button aria-pressed="false">Calendar</button></div><span class="grow"></span><select class="select" style="width:auto"><option>This week</option></select></div>
+    <div class="list" id="clist"></div>
+  </section>
+
+  <section class="panel" data-p="approvals" hidden>
+    <div class="two">
+      <div class="card card-pad stack">
+        <div class="row"><h2 class="section-title grow">Week of Mon 16 Nov</h2><span class="meta">4 of 6 selected</span></div>
+        <label class="row"><input type="checkbox" class="check" checked> <span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">Mon 16 · Reel · Meet Dr Asha Verma</span></label>
+        <label class="row"><input type="checkbox" class="check" checked> <span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">Mon 16 · Post · Thank you, nurses</span></label>
+        <label class="row"><input type="checkbox" class="check" checked> <span class="pmark" style="background:#5b4a8a">G</span><span class="grow truncate">Tue 17 · Google post · OPD timings</span></label>
+        <label class="row"><input type="checkbox" class="check" checked> <span class="pmark" style="background:#8a3d6b">IG</span><span class="grow truncate">Wed 18 · Reel · When to see a doctor</span></label>
+        <button class="btn btn-primary" id="send2">Create link and share…</button>
+      </div>
+      <div class="stack">
+        <div class="card card-pad"><div class="row"><b class="grow">Week of Mon 9 Nov</b><span class="badge b-success">4 answered</span></div><div class="meta">6 posts · sent 8 Nov · works until 15 Nov</div><div class="row wrap" style="margin-top:10px"><button class="btn btn-secondary btn-sm">Copy link</button><button class="btn btn-secondary btn-sm">WhatsApp</button><button class="btn btn-ghost btn-sm">Revoke</button></div></div>
+        <div class="card card-pad"><div class="row"><b class="grow">Week of Mon 16 Nov</b><span class="badge b-warning">Waiting 26 h</span></div><div class="meta">4 posts · sent 9 Nov</div><div class="row wrap" style="margin-top:10px"><button class="btn btn-primary btn-sm">Send WhatsApp reminder</button><button class="btn btn-secondary btn-sm">Copy link</button></div></div>
+      </div>
+    </div>
+  </section>
+  <section class="panel" data-p="shoots" hidden><div class="empty card"><div class="ill">📷</div><h3>2 shoots this month</h3>Mon 16 Nov 10:00 · Mon 23 Nov 10:00 — open one to plan shots.</div></section>
+  <section class="panel" data-p="reports" hidden><div class="empty card"><h3>No report for November yet</h3>Enter this month's numbers when the month ends.<div style="margin-top:12px"><button class="btn btn-primary">Start November report</button></div></div></section>
+  <section class="panel" data-p="billing" hidden><div class="empty card"><h3>Billing (owners only)</h3>Fees, invoices and a "Mark paid" action per invoice.</div></section>
+  <section class="panel" data-p="activity" hidden><div class="list"><div class="task"><span class="badge b-success">Approved</span><div><span class="t">Client approved “When to see a doctor”</span><div class="meta">Via approval link · 9 Nov, 4:50 pm</div></div></div><div class="task"><span class="badge b-warning">Changes</span><div><span class="t">Client asked for changes on “Thank you, nurses”</span><div class="meta">“Please use the new logo.” · 9 Nov, 4:48 pm</div></div></div></div></section>
+
+  <div class="sticky-actions"><a class="btn btn-secondary" href="#">Open plan</a><button class="btn btn-primary" onclick="document.getElementById('send').click()">Send for approval</button></div>
+</div>
+<script src="shell.js"></script>
+<script>
+const tabs = document.querySelectorAll('[role="tab"][data-t]');
+function show(t) {
+  tabs.forEach((b) => b.setAttribute("aria-selected", String(b.dataset.t === t)));
+  document.querySelectorAll(".panel").forEach((p) => (p.hidden = p.dataset.p !== t));
+}
+tabs.forEach((b) => (b.onclick = () => show(b.dataset.t)));
+document.querySelectorAll("[data-go]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); show(a.dataset.go); }));
+const det = document.getElementById("details");
+document.getElementById("edit").onclick = () => { det.classList.replace("view", "edit"); det.querySelector("input").focus(); };
+document.getElementById("cancel").onclick = () => det.classList.replace("edit", "view");
+document.getElementById("save").onclick = () => { det.classList.replace("edit", "view"); toast("Details saved", () => {}); };
+document.getElementById("send").onclick = () => show("approvals");
+document.getElementById("send2").onclick = () => toast("Link created — Copy · WhatsApp · Email");
+document.querySelectorAll(".task .open").forEach((b) => (b.onclick = () => openItem()));
+document.querySelectorAll(".task .check").forEach((c) => (c.onchange = () => toast("Marked done", () => (c.checked = false))));
+const rows = [["Mon 16", "Reel", "Meet Dr Asha Verma", "b-warning", "With client"], ["Mon 16", "Post", "Thank you, nurses", "b-warning", "With client"], ["Wed 18", "Reel", "When to see a General medicine doctor", "b-success", "Client approved"], ["Thu 19", "Post", "How we keep you safe", "b-info", "In production"], ["Fri 20", "Reel", "A minute with our nursing head", "b-neutral", "Planned"]];
+document.getElementById("clist").innerHTML = rows.map((r) => `<div class="task"><span class="pmark" style="background:#8a3d6b">IG</span><button class="open"><span class="t">${r[2]}</span><div class="meta">${r[0]} · ${r[1]}</div></button><span class="badge ${r[3]}">${r[4]}</span></div>`).join("");
+document.querySelectorAll("#clist .open").forEach((b) => (b.onclick = () => openItem()));
+</script>
+</body>
+</html>

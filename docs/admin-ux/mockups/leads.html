@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leads — Oryza admin mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+<style>
+  .views { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .views button { all: unset; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-weight: 650; font-size: 13px; }
+  .views button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .views .n { font-size: 12px; opacity: .75; }
+  @media (max-width: 767px) { .views { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px 12px; padding: 0 16px; } .views button { height: 40px; flex: none; } }
+  @media (max-width: 767px) { .density { display: none; } }
+  .lead-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; display: grid; gap: 6px; }
+</style>
+</head>
+<body data-page="leads" data-title="Leads">
+<div id="page">
+  <div class="page-head">
+    <div><h1 class="page-title">Leads</h1><p class="meta" style="margin:4px 0 0">Contact form and plan builder enquiries</p></div>
+    <div class="row"><button class="btn btn-secondary btn-sm">Export CSV</button></div>
+  </div>
+  <div class="views" role="group" aria-label="Saved views">
+    <button aria-pressed="true">All <span class="n">6</span></button><button aria-pressed="false">New <span class="n">2</span></button><button aria-pressed="false">Follow up today <span class="n">1</span></button><button aria-pressed="false">Plan builder <span class="n">3</span></button><button aria-pressed="false">Contacted <span class="n">2</span></button><button aria-pressed="false">+ Save view</button>
+  </div>
+  <div class="row wrap" style="margin-bottom:12px">
+    <input class="input" style="max-width:360px" placeholder="Search name, phone, business, city" aria-label="Search leads">
+    <span class="grow"></span>
+    <div class="seg density" role="group" aria-label="Row density"><button aria-pressed="true" data-d="comfy">Comfortable</button><button aria-pressed="false" data-d="compact">Compact</button></div>
+  </div>
+  <div class="bulkbar" id="bulk"><b id="bulk-n">0 selected</b><span class="grow"></span><button class="btn btn-secondary btn-sm">Mark contacted</button><button class="btn btn-secondary btn-sm">Not a fit</button><button class="btn btn-secondary btn-sm">Export</button></div>
+  <div class="table-wrap">
+    <table class="t" id="tbl">
+      <thead><tr>
+        <th style="width:44px"><input type="checkbox" class="check" aria-label="Select all" id="all"></th>
+        <th aria-sort="none"><button>Name ↕</button></th><th>Source</th><th>Category</th><th>City</th><th>Status</th><th aria-sort="descending"><button>Received ↓</button></th><th style="width:1%"></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+<script src="shell.js"></script>
+<script>
+const leads = [
+  ["Asha Verma", "Sample Convent School", "Plan builder", "Schools", "Kanpur", "New", "b-info", "2 h ago"],
+  ["Rohit Gupta", "Gupta Dental", "Contact form", "Hospitals & clinics", "Lucknow", "New", "b-info", "Yesterday"],
+  ["Meera Joshi", "Joshi Interiors", "Plan builder", "Interiors", "Kanpur", "Contacted", "b-warning", "Mon 9 Nov"],
+  ["Karan Mehta", "Fit Zone Gym", "Plan builder", "Gyms & salons", "Lucknow", "Contacted", "b-warning", "Sat 7 Nov"],
+  ["Sana Khan", "Sana's Kitchen", "Contact form", "Restaurants & cafés", "Kanpur", "Converted", "b-success", "Tue 3 Nov"],
+  ["Vikas Singh", "—", "Contact form", "Other", "Agra", "Not a fit", "b-neutral", "Mon 2 Nov"],
+];
+document.getElementById("rows").innerHTML = leads.map((l, i) => `<tr data-i="${i}">
+  <td><input type="checkbox" class="check rowcheck" aria-label="Select ${l[0]}"></td>
+  <td><button class="open" style="all:unset;cursor:pointer"><b>${l[0]}</b><div class="meta">${l[1]}</div></button></td>
+  <td>${l[2]}</td><td>${l[3]}</td><td>${l[4]}</td><td><span class="badge ${l[6]}">${l[5]}</span></td><td class="meta">${l[7]}</td>
+  <td><div class="row"><button class="btn btn-ghost btn-sm">WhatsApp</button>${l[5] === "Converted" ? "" : '<button class="btn btn-secondary btn-sm convert">Convert</button>'}</div></td></tr>`).join("");
+document.getElementById("cards").innerHTML = leads.map((l) => `<article class="lead-card"><div class="row"><b class="grow">${l[0]}</b><span class="badge ${l[6]}">${l[5]}</span></div><div class="meta">${l[1]} · ${l[3]} · ${l[4]} · ${l[7]}</div><div class="row"><button class="btn btn-secondary btn-sm grow">WhatsApp</button><button class="btn btn-secondary btn-sm grow">Call</button>${l[5] === "Converted" ? "" : '<button class="btn btn-primary btn-sm grow convert">Convert</button>'}</div></article>`).join("");
+const bulk = () => { const n = document.querySelectorAll(".rowcheck:checked").length; document.getElementById("bulk").classList.toggle("on", n > 0); document.getElementById("bulk-n").textContent = `${n} selected`; document.querySelectorAll("#rows tr").forEach((tr) => tr.setAttribute("aria-selected", String(tr.querySelector(".rowcheck").checked))); };
+document.querySelectorAll(".rowcheck").forEach((c) => (c.onchange = bulk));
+document.getElementById("all").onchange = (e) => { document.querySelectorAll(".rowcheck").forEach((c) => (c.checked = e.target.checked)); bulk(); };
+document.querySelectorAll('[data-d]').forEach((b) => (b.onclick = () => { document.querySelectorAll('[data-d]').forEach((x) => x.setAttribute("aria-pressed", String(x === b))); document.getElementById("tbl").classList.toggle("compact", b.dataset.d === "compact"); }));
+document.querySelectorAll(".views button").forEach((b) => (b.onclick = () => document.querySelectorAll(".views button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)))));
+document.querySelectorAll(".convert").forEach((b) => (b.onclick = () => toast("Opens the convert form with the plan answers filled in")));
+const drawer = document.getElementById("drawer");
+document.querySelectorAll(".open, .lead-card").forEach((b) => (b.onclick = (e) => {
+  if (e.target.closest("button:not(.open)")) return;
+  drawer.innerHTML = `<div class="drawer-head"><div class="grow"><p class="meta" style="margin:0">Plan builder · 2 h ago</p><h2 id="drawer-title" style="font:650 16px/22px var(--font-ui)">Asha Verma · Sample Convent School</h2></div><button class="icon-btn" aria-label="Close" id="lc">${svg("close")}</button></div>
+  <div class="drawer-body stack">
+    <div class="row wrap"><a class="btn btn-secondary btn-sm" href="#">WhatsApp +91 98000 00000</a><a class="btn btn-secondary btn-sm" href="#">Call</a></div>
+    <div class="field"><span>Status</span><div class="seg"><button aria-pressed="true">New</button><button aria-pressed="false">Contacted</button><button aria-pressed="false">Not a fit</button></div></div>
+    <label class="field"><span>Notes</span><textarea class="textarea" placeholder="What was discussed, next step…"></textarea><span class="hint">Saved as you type</span></label>
+    <label class="field"><span>Follow up on</span><input class="input" type="date" value="2026-11-11"></label>
+    <div class="card card-pad"><b>Plan answers</b><dl class="kv" style="margin-top:8px"><dt>Board</dt><dd>CBSE</dd><dt>Goals</dt><dd>Admissions, parent trust</dd><dt>Package</dt><dd>Growth</dd><dt>Platforms</dt><dd>Instagram, Facebook, WhatsApp, Google</dd></dl></div>
+  </div>
+  <div class="drawer-foot"><span class="grow"></span><button class="btn btn-primary">Convert to client</button></div>`;
+  drawer.classList.add("on"); document.getElementById("scrim").classList.add("on");
+  drawer.querySelectorAll(".seg button").forEach((s) => (s.onclick = () => { drawer.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === s))); toast(`Status: ${s.textContent}`, () => {}); }));
+  document.getElementById("lc").onclick = () => { drawer.classList.remove("on"); document.getElementById("scrim").classList.remove("on"); };
+}));
+</script>
+</body>
+</html>

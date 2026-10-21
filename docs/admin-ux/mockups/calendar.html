@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calendar — Oryza admin mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+<style>
+  .desk { display: block; } .phone { display: none; }
+  @media (max-width: 767px) { .desk { display: none; } .phone { display: block; } }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .filters .select { width: auto; min-height: 36px; padding: 6px 10px; font-size: 13px; }
+  .fchip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px 0 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border-strong); font-size: 13px; font-weight: 600; }
+  .fchip button { all: unset; cursor: pointer; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .agenda-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--border); min-height: 56px; cursor: pointer; }
+  .agenda-item:first-child { border-top: 0; }
+  .week .day { min-height: 420px; }
+</style>
+</head>
+<body data-page="calendar" data-title="Calendar">
+<div id="page">
+  <div class="page-head desk">
+    <h1 class="page-title">November 2026</h1>
+  </div>
+  <div class="desk">
+    <div class="toolbar">
+      <button class="icon-btn" aria-label="Previous month" style="border:1px solid var(--border-strong)">‹</button>
+      <button class="btn btn-secondary btn-sm">Today</button>
+      <button class="icon-btn" aria-label="Next month" style="border:1px solid var(--border-strong)">›</button>
+      <span class="grow"></span>
+      <div class="seg" role="group" aria-label="View"><button aria-pressed="true" data-v="month">Month</button><button aria-pressed="false" data-v="week">Week</button><button aria-pressed="false" data-v="list">List</button><button aria-pressed="false" data-v="board">Board</button></div>
+    </div>
+    <div class="filters">
+      <select class="select" aria-label="Client"><option>All clients</option></select>
+      <select class="select" aria-label="Platform"><option>All platforms</option></select>
+      <select class="select" aria-label="Stage"><option>Any stage</option></select>
+      <select class="select" aria-label="Assignee"><option>Anyone</option></select>
+      <span class="fchip">Format: Reel <button aria-label="Remove filter">×</button></span>
+      <button class="btn btn-ghost btn-sm">Save view</button>
+    </div>
+    <div class="cal" id="cal"></div>
+    <div class="legend"><span><span class="cdot" style="background:#2f6b4f"></span>Sample Clinic</span><span><span class="cdot" style="background:#8f5e0a"></span>Sample Public School</span><span><span class="cdot" style="background:#5b4a8a"></span>Sample Café</span><span><span class="badge b-danger plain">Overdue</span></span><span>Dot = stage colour · dashed = shoot · drag a post to move it (or press M)</span></div>
+  </div>
+
+  <div class="phone">
+    <div class="row" style="margin-bottom:8px"><b style="font:500 20px/26px var(--font-display)" class="grow">November 2026</b><button class="btn btn-secondary btn-sm">Today</button><button class="btn btn-secondary btn-sm">Filter</button></div>
+    <div class="weekstrip" id="strip"></div>
+    <div id="agenda"></div>
+  </div>
+</div>
+<script src="shell.js"></script>
+<script>
+const clients = { c: "#2f6b4f", s: "#8f5e0a", f: "#5b4a8a" };
+const stage = { p: "#4a5450", i: "#1f5a9e", w: "#7a4e00", a: "#1e6b45", s: "#5b3f96", d: "#13201c" };
+const posts = {
+  "2026-11-09": [["c", "Reel", "Meet our doctors", "a"], ["s", "Post", "Why CBSE?", "d"], ["f", "Story", "Quiz: guess the dish", "d"]],
+  "2026-11-10": [["c", "Post", "Sample Clinic at a glance", "s"], ["s", "Post", "How we keep your child safe", "s"], ["f", "Reel", "Thali / combo guide", "i", 1]],
+  "2026-11-11": [["c", "Reel", "How to reach us", "w", 1], ["f", "Reel", "How to reach Sample Café", "w", 1], ["s", "Story", "Notice board", "p"]],
+  "2026-11-12": [["s", "Post", "Healthy tiffin ideas", "i"], ["c", "Post", "A simple healthy plate", "p"]],
+  "2026-11-13": [["s", "Reel", "Where are they now?", "i"], ["c", "Reel", "Why I became a doctor", "p"], ["f", "Reel", "Meet the cook", "i"]],
+  "2026-11-14": [["s", "Post", "Children's Day wishes", "p"], ["c", "Post", "World Diabetes Day", "w"]],
+  "2026-11-16": [["c", "Reel", "Meet Dr Asha Verma", "w"], ["s", "Post", "This week at school", "p"]],
+  "2026-11-18": [["c", "Reel", "When to see a General medicine doctor", "a"], ["f", "Post", "Weekend brunch", "p"]],
+  "2026-11-20": [["s", "Reel", "Sports day highlights", "p"]],
+  "2026-11-24": [["c", "Post", "Preventive check-ups", "p"], ["s", "Post", "How to build a study routine", "p"]],
+};
+const shoots = { "2026-11-16": ["c", "10:00 Clinic shoot"], "2026-11-10": ["f", "11:00 Café shoot"] };
+const iso = (d) => d.toISOString().slice(0, 10);
+const chip = ([cl, f, t, st, od]) => `<button class="chip ${od ? "overdue" : ""}" style="--cl:${clients[cl]}" title="${t}"><span class="s" style="background:${stage[st]}"></span><b>${f}</b><span class="truncate">${t}</span></button>`;
+function month() {
+  let html = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<div class="dow">${d}</div>`).join("");
+  const start = new Date("2026-10-26T00:00:00Z");
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start.getTime() + i * 864e5); const k = iso(d); const list = posts[k] || [];
+    html += `<div class="day ${d.getUTCMonth() !== 10 ? "out" : ""} ${k === "2026-11-10" ? "today" : ""}"><div class="d"><b>${d.getUTCDate()}</b>${list.length > 3 ? `<span class="meta">${list.length}</span>` : ""}</div>${shoots[k] ? `<div class="shootchip"><span class="cdot" style="width:7px;height:7px;background:${clients[shoots[k][0]]}"></span>${shoots[k][1]}</div>` : ""}${list.slice(0, 3).map(chip).join("")}${list.length > 3 ? `<button class="more">+${list.length - 3} more</button>` : ""}</div>`;
+    if (i === 34 && d.getUTCMonth() !== 10) break;
+  }
+  document.getElementById("cal").className = "cal";
+  document.getElementById("cal").innerHTML = html;
+  wire();
+}
+function week() {
+  let html = ["Mon 9", "Tue 10", "Wed 11", "Thu 12", "Fri 13", "Sat 14", "Sun 15"].map((d) => `<div class="dow">${d}</div>`).join("");
+  for (let i = 0; i < 7; i++) {
+    const k = `2026-11-${String(9 + i).padStart(2, "0")}`; const list = posts[k] || [];
+    html += `<div class="day ${k === "2026-11-10" ? "today" : ""}">${shoots[k] ? `<div class="shootchip">${shoots[k][1]}</div>` : ""}${list.map((p) => chip(p).replace('</button>', `</button><span class="meta" style="padding:0 6px 4px">${p[3] === "w" ? "With client" : p[3] === "a" ? "Client approved" : p[3] === "s" ? "Scheduled" : p[3] === "d" ? "Published" : p[3] === "i" ? "In production" : "Planned"}</span>`)).join("")}</div>`;
+  }
+  document.getElementById("cal").className = "cal week";
+  document.getElementById("cal").innerHTML = html;
+  wire();
+}
+function wire() { document.querySelectorAll(".chip").forEach((c) => (c.onclick = () => openItem())); }
+document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  if (b.dataset.v === "week") week(); else if (b.dataset.v === "month") month(); else toast(`${b.textContent} view — see the Board mock in step 2`);
+}));
+month();
+
+// Phone: week strip + agenda for the chosen day.
+let chosen = "2026-11-10";
+function phone() {
+  document.getElementById("strip").innerHTML = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => {
+    const k = `2026-11-${String(9 + i).padStart(2, "0")}`;
+    return `<button ${k === "2026-11-10" ? 'aria-current="date"' : ""} aria-pressed="${k === chosen}" data-k="${k}"><span>${d}</span><b>${9 + i}</b>${posts[k] ? "<i></i>" : ""}</button>`;
+  }).join("");
+  document.querySelectorAll("#strip button").forEach((b) => (b.onclick = () => { chosen = b.dataset.k; phone(); }));
+  const days = [chosen, ...Object.keys(posts).filter((k) => k > chosen).slice(0, 3)];
+  document.getElementById("agenda").innerHTML = days.map((k) => `
+    <div class="group-head" style="border-radius:10px 10px 0 0;margin-top:12px">${new Date(k + "T00:00:00Z").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", timeZone: "UTC" })}${k === "2026-11-10" ? ' · <span style="color:var(--accent-text)">Today</span>' : ""}</div>
+    <div class="list" style="border-radius:0 0 12px 12px">${shoots[k] ? `<div class="agenda-item"><span class="shootchip">Shoot</span><span class="grow">${shoots[k][1]}</span></div>` : ""}${(posts[k] || []).map(([cl, f, t, st, od]) => `<div class="agenda-item" role="button" tabindex="0"><span class="cdot" style="background:${clients[cl]}"></span><div class="grow"><b class="truncate" style="display:block">${t}</b><span class="meta">${f}${od ? ' · <span style="color:var(--danger)">Overdue</span>' : ""}</span></div><span class="cdot" style="width:8px;height:8px;background:${stage[st]}" title="stage"></span></div>`).join("") || '<div class="agenda-item muted">Nothing planned</div>'}</div>`).join("");
+  document.querySelectorAll(".agenda-item[role=button]").forEach((a) => (a.onclick = () => openItem()));
+}
+phone();
+</script>
+</body>
+</html>

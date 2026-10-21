@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Content item — Oryza admin mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+<style>
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  .colm { background: var(--surface-2); border-radius: var(--r-card); padding: 8px; min-height: 360px; }
+  .colm h3 { display: flex; gap: 6px; align-items: center; font: 700 13px/18px var(--font-ui); padding: 4px 6px 8px; }
+  .colm.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
+  .kcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; cursor: grab; }
+  .kcard:active { cursor: grabbing; }
+  .kcard .t { font-weight: 650; display: block; margin: 4px 0; }
+  .kcard.locked { cursor: not-allowed; opacity: .9; }
+  @media (max-width: 767px) { .board { grid-auto-columns: 82%; scroll-snap-type: x mandatory; } .colm { scroll-snap-align: start; } }
+</style>
+</head>
+<body data-page="calendar" data-title="Content · Board">
+<div id="page">
+  <div class="page-head">
+    <div><h1 class="page-title">Content</h1><p class="meta" style="margin:4px 0 0">Week of Mon 9 Nov · all clients</p></div>
+    <div class="seg" role="group" aria-label="View"><a href="calendar.html">Calendar</a><button aria-pressed="false">List</button><button aria-pressed="true">Board</button></div>
+  </div>
+  <div class="board" id="board"></div>
+  <p class="mock-note">Drag a card to another stage. Same rules as today: a post only moves to “Client approved” through the client's answer, so that column refuses drops and says why. On phones, swipe between columns and use the card's “Move to…” menu instead of dragging.</p>
+</div>
+<script src="shell.js"></script>
+<script>
+const cols = [["planned", "Planned", "b-neutral"], ["in_production", "In production", "b-info"], ["client_review", "With client", "b-warning"], ["approved", "Client approved", "b-success"], ["scheduled", "Scheduled", "b-violet"], ["published", "Published", "b-ink"]];
+const cards = [
+  ["planned", "#2f6b4f", "Reel", "A minute with our nursing head", "Fri 20"], ["planned", "#8f5e0a", "Post", "How to build a study routine", "Tue 24"],
+  ["in_production", "#2f6b4f", "Reel", "How to reach us and where to park", "Wed 11", "Edit due today"], ["in_production", "#5b4a8a", "Reel", "Meet the cook", "Fri 13"],
+  ["client_review", "#2f6b4f", "Reel", "Meet Dr Asha Verma", "Mon 16", "Sent 26 h ago"], ["client_review", "#2f6b4f", "Post", "Thank you, nurses", "Mon 16"],
+  ["approved", "#2f6b4f", "Reel", "When to see a General medicine doctor", "Wed 18"],
+  ["scheduled", "#2f6b4f", "Post", "Sample Clinic at a glance", "Tue 10"], ["scheduled", "#8f5e0a", "Post", "How we keep your child safe", "Tue 10"],
+  ["published", "#8f5e0a", "Post", "Why CBSE?", "Mon 9"],
+];
+let dragging = null;
+function render() {
+  document.getElementById("board").innerHTML = cols.map(([k, l, b]) => `
+    <section class="colm" data-k="${k}" aria-label="${l}"><h3><span class="badge ${b}">${l}</span><span class="meta">${cards.filter((c) => c[0] === k).length}</span></h3>
+      ${cards.map((c, i) => c[0] !== k ? "" : `<article class="kcard" draggable="true" data-i="${i}" tabindex="0"><div class="row"><span class="cdot" style="background:${c[1]}"></span><span class="meta">${c[2]} · ${c[4]}</span></div><span class="t">${c[3]}</span>${c[5] ? `<span class="badge ${c[5].includes("today") ? "b-warning" : "b-neutral"} plain">${c[5]}</span>` : ""}</article>`).join("")}
+    </section>`).join("");
+  document.querySelectorAll(".kcard").forEach((el) => {
+    el.ondragstart = () => (dragging = +el.dataset.i);
+    el.onclick = () => openItem();
+    el.onkeydown = (e) => { if (e.key === "Enter") openItem(); };
+  });
+  document.querySelectorAll(".colm").forEach((col) => {
+    col.ondragover = (e) => { e.preventDefault(); col.classList.add("drop"); };
+    col.ondragleave = () => col.classList.remove("drop");
+    col.ondrop = () => {
+      col.classList.remove("drop");
+      if (dragging === null) return;
+      const to = col.dataset.k;
+      if (to === "approved") { toast("Only the client can approve — send it for approval instead"); return; }
+      const from = cards[dragging][0];
+      cards[dragging][0] = to;
+      const moved = dragging;
+      render();
+      toast(`Moved to ${cols.find((c) => c[0] === to)[1]}`, () => { cards[moved][0] = from; render(); });
+      dragging = null;
+    };
+  });
+}
+render();
+openItem();
+</script>
+</body>
+</html>
