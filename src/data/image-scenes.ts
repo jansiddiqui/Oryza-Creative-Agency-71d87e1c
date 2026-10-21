@@ -468,4 +468,29 @@ export const sceneBriefs: Record<string, SceneBrief> = {
       realism: "A loose thread on the fabric edge, carved-wood dust in the grooves, a slight dent in the cushion, a worn brass patina.",
     },
   },
+
+  "contact-studio": {
+    purpose: "Small image beside the contact details on the Contact page. It must feel welcoming, calm and easy — a quiet invitation to talk, never an office, studio or team.",
+    textSide: "right",
+    camera: "50 mm lens, f/3.2, 1/200 s, ISO 400. Objects sharp, window softly blurred.",
+    negatives: "any person or hand; office desks, monitors or branded items; anything that looks like a real company's office, studio or team; a lit phone screen",
+    main: {
+      scene: "A quiet late afternoon in early spring beside a window in an old house in Kanpur, Uttar Pradesh. On a small wooden table: a plain dark phone lying face up with its screen switched off, a closed cloth-bound notebook with a pencil resting on it, and a glass of masala chai on a steel coaster. A cotton curtain hangs at the window; a potted tulsi plant stands on the sill.",
+      people: "No people and no hands anywhere in the frame — a quiet still life that invites a conversation without suggesting anyone's office or team.",
+      placement: "Place the phone, notebook and chai together in the centre-left.",
+      calm: "soft curtain and window light",
+      angle: "Camera at table height plus 30 cm, angled down about 25°.",
+      light: "Warm low sun through the window from the right, about 4300 K, long soft shadows across the table.",
+      realism: "Steam rising from the chai, a small tea stain on the coaster, a slightly frayed curtain hem, fine dust on the sill, a worn notebook corner.",
+    },
+    alt: {
+      scene: "Early morning on a quiet street corner in an old Kanpur neighbourhood, late winter. A small tea stall's wooden bench, a few clay kulhads on a ledge, a bicycle parked against a whitewashed wall, an old neem tree, and nearby shop shutters still half closed.",
+      people: "Nobody in the foreground; at most one distant passer-by seen from behind, small and softly out of focus. Nobody faces the camera.",
+      placement: "Place the bench, kulhads and bicycle in the centre-left.",
+      calm: "whitewashed wall",
+      angle: "Eye level (about 1.4 m), level horizon.",
+      light: "Soft early sun from the right, about 4600 K, gentle long shadows across the street.",
+      realism: "Chipped kulhad rims, a coiled water pipe, dry neem leaves on the ground, worn bench edges, a faded wall with no lettering.",
+    },
+  },
 };

@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { slotById } from "@/data/image-slots";
 import { REVIEW_CHECKLIST } from "@/lib/image-prompts";
 import type { Admin, AuditAction } from "@/lib/admin/types";
@@ -57,18 +57,27 @@ describe("upload validation", () => {
   });
 });
 
-describe("real-only enforcement", () => {
+describe("real-only enforcement (safeguard; no live slot uses it, so a test slot is registered here)", () => {
+  beforeAll(() => {
+    slotById["test-real-only"] = { ...slotById["contact-studio"], id: "test-real-only", type: "real-only" };
+  });
+  afterAll(() => {
+    delete slotById["test-real-only"];
+  });
+
   it("rejects an AI image for a real-only slot (server side) and deletes the upload", async () => {
-    await expect(upload("contact-studio", "ai-illustrative", 1536, 1152)).rejects.toThrow(/only a real photo/);
+    await expect(upload("test-real-only", "ai-illustrative", 1536, 1152)).rejects.toThrow(/only a real photo/);
     expect(store.rows.size).toBe(0);
     expect(store.originals.size).toBe(0);
   });
-  it("accepts a real photo there", async () => {
-    const v = await upload("contact-studio", "real", 1536, 1152);
+  it("accepts a real photo there, and real photos on every normal slot", async () => {
+    expect((await upload("contact-studio", "real", 1536, 1152)).source).toBe("real");
+    expect((await upload("home-hero", "real")).source).toBe("real");
+    const v = await upload("test-real-only", "real", 1536, 1152);
     expect(v.source).toBe("real");
   });
   it("refuses approval if a real-only row was tampered to AI", async () => {
-    const v = await upload("contact-studio", "real", 1536, 1152);
+    const v = await upload("test-real-only", "real", 1536, 1152);
     await store.repo.update(v.id, { source: "ai-illustrative" });
     await expect(approve(deps, admin, v.id, allTicked)).rejects.toThrow(/only a real photo/);
   });

@@ -56,7 +56,7 @@ describe("SlotImage", () => {
     expect(html).not.toContain("<img");
   });
 
-  it("renders nothing for an empty slot without a fallback (e.g. the real-only team photo)", async () => {
+  it("renders nothing for an empty slot without a fallback (e.g. the contact image)", async () => {
     expect(await render(SlotImage({ slot: "contact-studio" }))).toBe("");
   });
 

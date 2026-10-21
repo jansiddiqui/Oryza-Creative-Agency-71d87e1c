@@ -4,9 +4,9 @@ Images are managed in the browser at **/admin/images**, on a computer or a phone
 show a photo is a **slot**. A slot shows its live image, or a calm brand pattern until it has one.
 
 **The two rules**
-- **AI images are only for illustrative slots** (decorative scenes on page headers). Never present one as client work,
+- **Every slot has a ready-to-copy prompt.** AI images are decorative scenes only. Never present one as client work,
   results, our team or our office.
-- **Real-only slots take real photos only.** The admin and the server both refuse anything else.
+- **Real photos are always welcome.** Any slot accepts a real photo, and a real photo can replace an AI image at any time.
 
 ---
 
@@ -30,11 +30,14 @@ The slot page shows:
 3. Not happy with any of them? Tap **Copy alternative scene** for the same idea in a different setting, and try again.
 4. Download the original (PNG or JPG).
 
-For a **real-only** slot there is no prompt. Take or choose a real photo instead (landscape, at least the size shown).
-Share images (1200×630) are made automatically from their page header; they need no prompt.
+Have a good real photo instead? Skip the prompt and upload it (landscape, at least the size shown).
+
+**Share images** (1200×630, what WhatsApp and LinkedIn show) are made automatically from their page header. Their slot
+page shows the header's prompt with the same **Copy prompt** and **Copy alternative scene** buttons, with the note
+"Made automatically from the header image — you can also upload your own."
 
 ### 3. Upload
-1. Under **Upload**, choose **Real photo** or **AI illustrative**. On real-only slots only "Real photo" is possible.
+1. Under **Upload**, choose **Real photo** or **AI illustrative** (both are available on every slot).
 2. Optional: add a credit (photographer or source).
 3. Drag the file onto the box, or tap **Choose a file** (on a phone this opens your gallery or camera).
 4. The admin checks the type (JPG, PNG, WebP), size (up to 25 MB) and shape. If something is wrong, it tells you
@@ -84,7 +87,6 @@ Everything is recorded under **Activity**: who uploaded, approved, replaced, res
 | --- | --- |
 | "Too small for the … crop" | Generate or export a bigger image (1536×1024 or larger). |
 | "Wrong shape" | Use a landscape (3:2) image, not a portrait or a very wide panorama. |
-| "Only a real photo is allowed here" | This slot is real-only. Use a real photo. |
 | "Tick every review item" | Every checklist point must be ticked. If one is not true, use a different image. |
 | Publishing takes long or fails | Try again once. If it keeps failing, check Vercel → Logs for `[admin]`. |
 | The public page still shows the old image | Hard-refresh the page. Updates are usually live within seconds. |

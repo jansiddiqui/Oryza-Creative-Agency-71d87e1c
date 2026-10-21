@@ -90,7 +90,7 @@ export function ImagesListView({ rows, filters }: { rows: SlotSummary[]; filters
                 <div className="flex flex-1 flex-col p-4">
                   <p className="font-semibold">{r.slot.purpose}</p>
                   <p className="mt-1 text-[13px] text-muted">
-                    {r.slot.page} · {r.slot.type === "real-only" ? "Real photo only" : "Illustrative"}
+                    {r.slot.page} · {r.slot.deriveFrom ? "Share image" : "Illustrative"}
                     {r.live ? ` · ${sourceLabel(r.live.source)}` : ""}
                   </p>
                   <p className="mt-auto pt-3 font-mono text-[12px] text-muted">{r.slot.id}</p>

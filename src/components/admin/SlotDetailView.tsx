@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ImageSlot } from "@/data/image-slots";
-import { buildPrompt, sourceSize } from "@/lib/image-prompts";
+import { slotPrompts, sourceSize } from "@/lib/image-prompts";
+import { slotById } from "@/data/image-slots";
 import type { VersionView } from "@/lib/admin/images-data";
 import { AdminTitle, StatusBadge, sourceLabel } from "./AdminShell";
 import { CopyButton } from "./CopyButton";
@@ -14,8 +15,9 @@ const publicPageExists = (page: string) => !page.startsWith("/industries/") || p
 export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: VersionView[] }) {
   const live = versions.find((v) => v.status === "live");
   const pending = versions.find((v) => v.status === "uploaded");
-  const prompt = buildPrompt(slot, "main");
-  const altPrompt = buildPrompt(slot, "alt");
+  const prompts = slotPrompts(slot, slotById);
+  const prompt = prompts?.main ?? null;
+  const altPrompt = prompts?.alt ?? null;
   const size = sourceSize(slot);
   return (
     <>
@@ -44,7 +46,7 @@ export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: 
             </div>
             <div>
               <dt className="font-semibold">Type</dt>
-              <dd className="text-muted">{slot.type === "real-only" ? "Real photo only — no AI images" : "Illustrative — a real photo or an AI illustration (decorative scene only)"}</dd>
+              <dd className="text-muted">{slot.deriveFrom ? "Share image — made automatically from the page header image" : "A real photo or an AI illustration (decorative scene only). A real photo can replace the AI image at any time."}</dd>
             </div>
             <div>
               <dt className="font-semibold">Sizes made on approval</dt>
@@ -71,9 +73,15 @@ export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: 
         </section>
 
         <section aria-labelledby="prompt-h" className="rounded-2xl border border-line bg-cream/60 p-5 sm:p-6">
-          <h2 id="prompt-h" className="font-display text-2xl">{prompt ? "Prompt" : slot.deriveFrom ? "Made from the page header" : "Real photo needed"}</h2>
+          <h2 id="prompt-h" className="font-display text-2xl">Prompt</h2>
           {prompt ? (
             <>
+              {slot.deriveFrom && (
+                <p className="mt-2 rounded-xl bg-gold-100/60 px-4 py-3 text-[14px]">
+                  Made automatically from the{" "}
+                  <Link href={`/admin/images/${slot.deriveFrom}`} className="font-semibold underline">header image</Link> — you can also upload your own.
+                </p>
+              )}
               <p className="mt-2 text-[14px] text-ink-soft">
                 Paste into ChatGPT, Gemini or Midjourney. Generate 3–4 versions and pick the most natural one.
               </p>
@@ -92,15 +100,8 @@ export function SlotDetailView({ slot, versions }: { slot: ImageSlot; versions: 
                 </details>
               )}
             </>
-          ) : slot.deriveFrom ? (
-            <p className="mt-3 text-[14px] text-ink-soft">
-              This share image is made automatically from the{" "}
-              <Link href={`/admin/images/${slot.deriveFrom}`} className="font-semibold underline">page header image</Link> when it is approved. Upload here only if you want a different share image.
-            </p>
           ) : (
-            <p className="mt-3 text-[14px] text-ink-soft">
-              This slot shows real work, people or places, so there is no AI prompt. Brief for the photo: {slot.subject}. Upload a real photo below.
-            </p>
+            <p className="mt-3 text-[14px] text-ink-soft">No prompt is available for this slot yet.</p>
           )}
         </section>
       </div>
