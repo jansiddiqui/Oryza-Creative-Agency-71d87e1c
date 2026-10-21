@@ -15,7 +15,20 @@ export type AuditAction =
   | "image.focal"
   | "lead.update"
   | "user.add"
-  | "user.update";
+  | "user.update"
+  | "client.create"
+  | "client.update"
+  | "plan.generate"
+  | "plan.edit"
+  | "plan.approve"
+  | "item.move"
+  | "item.update"
+  | "task.update"
+  | "shoot.update"
+  | "onboarding.update"
+  | "team.update"
+  | "rules.update"
+  | "settings.update";
 
 export type LeadStatus = "new" | "contacted" | "converted" | "not_fit";
 

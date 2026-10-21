@@ -7,9 +7,12 @@ import { AdminNav, type NavItem } from "./AdminNav";
 export function adminNav(admin: Pick<Admin, "role">): NavItem[] {
   return [
     { href: "/admin", label: "Overview" },
-    { href: "/admin/images", label: "Images" },
+    { href: "/admin/today", label: "Today" },
+    { href: "/admin/calendar", label: "Calendar" },
+    { href: "/admin/clients", label: "Clients" },
     { href: "/admin/leads", label: "Leads" },
-    ...(admin.role === "owner" ? [{ href: "/admin/users", label: "Users" }] : []),
+    { href: "/admin/images", label: "Images" },
+    ...(admin.role === "owner" ? [{ href: "/admin/users", label: "Users" }, { href: "/admin/settings", label: "Settings" }] : []),
     { href: "/admin/audit", label: "Activity" },
     { href: "/admin/account", label: "Account" },
   ];

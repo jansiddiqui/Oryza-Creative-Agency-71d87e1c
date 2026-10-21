@@ -1,0 +1,31 @@
+/*
+ * Utilities for the admin panel, loaded only by its layout. The public stylesheet (app/globals.css) skips the
+ * client operations folders (Today, Calendar, Clients, Settings), so public CSS is unaffected by them. This file
+ * covers every admin file, so on admin pages each utility comes from here in Tailwind's correct order.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "../../../components/admin";
+@source "../";
+
+/* Brand tokens: the same values as app/globals.css. */
+@theme {
+  --color-ink: #13201c;
+  --color-ink-soft: #2b3a35;
+  --color-muted: #5b6662;
+  --color-line: #e3dccd;
+  --color-paper: #fbf8f1;
+  --color-cream: #f3ede0;
+  --color-gold-700: #8f5e0a;
+  --color-gold-500: #b9811a;
+  --color-gold-300: #e8b84a;
+  --color-gold-100: #f7e8c4;
+}
+
+/* Fonts come from next/font (src/app/fonts.ts), which sets these variables on <html>. */
+@theme inline {
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}

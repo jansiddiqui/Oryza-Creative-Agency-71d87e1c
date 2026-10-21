@@ -125,7 +125,7 @@ describe("server-side admin check (every admin action and API)", () => {
 
   it("every admin server action goes through adminAction", () => {
     const dir = join(process.cwd(), "src", "app", "admin");
-    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts"];
+    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts", "(panel)/clients/actions.ts", "(panel)/calendar/actions.ts", "(panel)/today/actions.ts", "(panel)/settings/actions.ts"];
     for (const f of actionFiles) {
       const src = readFileSync(join(dir, f), "utf8");
       const exported = src.match(/export async function \w+/g) ?? [];
@@ -157,7 +157,7 @@ describe("public pages ship no admin code", () => {
         } else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) && rel !== "lib/leads.ts" && rel !== "proxy.ts") {
           const src = readFileSync(p, "utf8");
           // Types/constants from lib/admin/types are fine; runtime admin code, Supabase clients and the service key are not.
-          const runtime = /from "@\/lib\/admin\/(auth|action|audit|images-data)"|from "@\/components\/admin|from "@supabase\/|SUPABASE_SERVICE_ROLE_KEY|from "@\/lib\/supabase\/(admin|server)"/;
+          const runtime = /from "@\/lib\/admin\/(auth|action|audit|images-data|ops-data)"|from "@\/components\/admin|from "@supabase\/|SUPABASE_SERVICE_ROLE_KEY|from "@\/lib\/supabase\/(admin|server)"/;
           if (runtime.test(src) && rel !== "app/api/lead/route.ts") offenders.push(rel);
         }
       }

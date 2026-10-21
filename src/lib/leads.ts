@@ -98,3 +98,9 @@ export async function updateLead(id: string, patch: { status?: LeadStatus; notes
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+export async function getLead(id: string): Promise<Lead | null> {
+  const { data, error } = await serviceClient().from("leads").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? toLead(data as Row) : null;
+}
