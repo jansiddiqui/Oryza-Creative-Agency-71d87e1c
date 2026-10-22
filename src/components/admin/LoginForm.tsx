@@ -5,8 +5,8 @@ import { passwordSignIn, sendSignInLink, type LoginState } from "@/app/admin/log
 
 const input = "mt-1.5 w-full rounded-xl border border-line bg-paper px-4 py-3 text-[15px] focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-300/40";
 
-export function LoginForm({ next, notice }: { next: string; notice?: string }) {
-  const [mode, setMode] = useState<"password" | "link">("password");
+export function LoginForm({ next, notice, initialMode = "password" }: { next: string; notice?: string; initialMode?: "password" | "link" }) {
+  const [mode, setMode] = useState<"password" | "link">(initialMode);
   const [pwState, pwAction, pwPending] = useActionState<LoginState, FormData>(passwordSignIn, {});
   const [linkState, linkAction, linkPending] = useActionState<LoginState, FormData>(sendSignInLink, {});
   const state = mode === "password" ? pwState : linkState;
@@ -21,7 +21,7 @@ export function LoginForm({ next, notice }: { next: string; notice?: string }) {
         ))}
       </div>
 
-      {notice && <p role="status" className="mb-4 rounded-xl bg-gold-100/60 px-4 py-3 text-[14px]">{notice}</p>}
+      {notice && <p role="alert" className="mb-4 rounded-xl bg-gold-100/60 px-4 py-3 text-[14px]">{notice}</p>}
 
       {mode === "link" && linkState.sent ? (
         <p role="status" className="rounded-xl bg-cream px-4 py-4 text-[15px]">

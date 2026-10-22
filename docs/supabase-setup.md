@@ -36,10 +36,30 @@ The owner can add more people later in **/admin → Users**.
 
 **Authentication → URL Configuration**
 - **Site URL:** `https://www.oryzaonline.in`
-- **Redirect URLs** (add each):
-  - `https://www.oryzaonline.in/admin/auth/callback`
-  - `https://*-jansiddiquis-projects.vercel.app/admin/auth/callback` (Vercel previews)
-  - `http://localhost:3000/admin/auth/callback` (local development)
+- **Redirect URLs** (add each, **with the `**` at the end**):
+  - `https://www.oryzaonline.in/admin/auth/callback**`
+  - `https://oryzaonline.in/admin/auth/callback**`
+  - `https://*-jansiddiquis-projects.vercel.app/admin/auth/callback**` (Vercel previews)
+  - `http://localhost:3000/admin/auth/callback**` (local development)
+
+  The sign-in link comes back to `/admin/auth/callback?next=/admin/…`. Supabase only uses that address if it
+  matches an entry here, and the `?next=…` part means an exact entry without `**` does **not** match. When nothing
+  matches, Supabase silently sends the link to the **Site URL** instead, so you land on the homepage with
+  `?code=…` and are not signed in.
+
+**Authentication → Emails → Magic Link** (and **Confirm signup**): keep the default `{{ .ConfirmationURL }}` in the
+template. A template that links to `{{ .SiteURL }}` sends everyone to the homepage.
+
+### If an email link opens the homepage (`/?code=…`) instead of the admin
+1. Check the Redirect URLs above (with `**`) and the email template.
+2. Request a **new** link. Links sent before a settings change keep their old address. A link that opens
+   `http://localhost:3000` was sent while the Site URL was still Supabase's default (`http://localhost:3000`).
+3. Open the link in the **same browser** you requested it from. The link works only once, only there, and
+   expires (Authentication → Sign In / Providers → Email OTP expiry). Otherwise the login page says
+   "This link has expired or was already used — request a new one".
+
+An admin address that receives `?code=` (for example `/admin?code=…`) is forwarded to the callback automatically.
+Public pages are never changed for this.
 
 ## 4. Create a login for each admin
 

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { forwardToCallback } from "@/lib/admin/auth-redirect";
 
 /**
  * Runs only for /admin. Refreshes the Supabase session cookie, sends visitors without a session to the login
@@ -11,6 +12,15 @@ export const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/auth/"];
 export const isPublicAdminPath = (path: string) => PUBLIC_ADMIN_PATHS.some((p) => (p.endsWith("/") ? path.startsWith(p) : path === p));
 
 export async function proxy(request: NextRequest) {
+  // A sign-in code that landed on an admin page instead of the callback: finish the sign-in there.
+  const forward = forwardToCallback(request.nextUrl);
+  if (forward) {
+    const res = NextResponse.redirect(forward);
+    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    res.headers.set("Cache-Control", "private, no-store");
+    return res;
+  }
+
   let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
