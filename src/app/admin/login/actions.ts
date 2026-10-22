@@ -6,8 +6,8 @@ import { lookupAdmin } from "@/lib/admin/auth";
 import { serviceConfigured } from "@/lib/supabase/admin";
 import { supabaseConfigured } from "@/lib/supabase/config";
 import { sessionClient } from "@/lib/supabase/server";
-import { site } from "@/lib/site";
 import { safeNext } from "@/lib/admin/safe-next";
+import { signInRedirectUrl } from "@/lib/admin/auth-redirect";
 
 export type LoginState = { error?: string; sent?: boolean };
 
@@ -35,12 +35,16 @@ export async function sendSignInLink(_prev: LoginState, fd: FormData): Promise<L
   const address = email(fd);
   if (address && (await lookupAdmin(address))) {
     const h = await headers();
-    const host = h.get("x-forwarded-host") ?? h.get("host");
-    const origin = h.get("origin") ?? (host ? `${h.get("x-forwarded-proto") ?? "https"}://${host}` : site.url);
+    // Back to the callback on the site in use (production, preview or local), never a hard-coded address.
+    const emailRedirectTo = signInRedirectUrl(
+      { origin: h.get("origin"), host: h.get("host"), forwardedHost: h.get("x-forwarded-host"), forwardedProto: h.get("x-forwarded-proto") },
+      process.env.NEXT_PUBLIC_SITE_URL,
+      fd.get("next"),
+    );
     const supabase = await sessionClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: address,
-      options: { emailRedirectTo: `${origin}/admin/auth/callback?next=${encodeURIComponent(safeNext(fd.get("next")))}`, shouldCreateUser: false },
+      options: { emailRedirectTo, shouldCreateUser: false },
     });
     if (error) console.error("[admin] sign-in link failed:", error.message);
   }
