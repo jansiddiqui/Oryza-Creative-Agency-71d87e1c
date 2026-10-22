@@ -4,7 +4,7 @@ import type { AdminRole } from "@/lib/admin/types";
 export type IconName =
   | "today" | "calendar" | "clients" | "shoots" | "team" | "leads" | "reports" | "images" | "payments" | "settings"
   | "users" | "activity" | "account" | "search" | "bell" | "plus" | "more" | "close" | "menu" | "chevron" | "left"
-  | "check" | "upload" | "note" | "logout" | "external" | "keyboard" | "board" | "list";
+  | "check" | "upload" | "note" | "logout" | "external" | "keyboard" | "board" | "list" | "eye" | "eyeOff" | "lock";
 
 export interface NavItem {
   href: string;

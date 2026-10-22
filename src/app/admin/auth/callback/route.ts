@@ -3,6 +3,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { lookupAdmin } from "@/lib/admin/auth";
 import { sessionClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/admin/safe-next";
+import { REMEMBER_COOKIE } from "@/lib/supabase/remember";
 
 const OTP_TYPES: EmailOtpType[] = ["magiclink", "email", "recovery", "invite", "signup", "email_change"];
 
@@ -17,10 +18,13 @@ export async function GET(req: Request) {
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type") as EmailOtpType | null;
   const next = safeNext(url.searchParams.get("next"));
-  const back = (error: string) => NextResponse.redirect(new URL(`/admin/login?error=${error}`, url));
+  // A failed password-reset link goes back to "Forgot password?" so a new one is one step away.
+  const back = (error: string) =>
+    NextResponse.redirect(new URL(error === "link" && next === "/admin/reset-password" ? "/admin/forgot-password?error=expired" : `/admin/login?error=${error}`, url));
 
   if (!code && !tokenHash) return back("link");
-  const supabase = await sessionClient();
+  // An email link always gives the normal (remembered) session.
+  const supabase = await sessionClient({ temporary: false });
   const { data, error } = code
     ? await supabase.auth.exchangeCodeForSession(code)
     : await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: type && OTP_TYPES.includes(type) ? type : "email" });
@@ -29,5 +33,7 @@ export async function GET(req: Request) {
     await supabase.auth.signOut();
     return back("denied");
   }
-  return NextResponse.redirect(new URL(next, url));
+  const res = NextResponse.redirect(new URL(next, url));
+  res.cookies.delete(REMEMBER_COOKIE);
+  return res;
 }

@@ -47,8 +47,18 @@ The owner can add more people later in **/admin → Users**.
   matches, Supabase silently sends the link to the **Site URL** instead, so you land on the homepage with
   `?code=…` and are not signed in.
 
-**Authentication → Emails → Magic Link** (and **Confirm signup**): keep the default `{{ .ConfirmationURL }}` in the
-template. A template that links to `{{ .SiteURL }}` sends everyone to the homepage.
+**Authentication → Emails** — **Magic Link**, **Reset Password** (and **Confirm signup**): branded templates are fine
+as long as the button links to `{{ .ConfirmationURL }}`. A template that links to `{{ .SiteURL }}` sends everyone to
+the homepage. The app sends these links:
+- Email link sign-in → `/admin/auth/callback?next=/admin/…` → the page you were going to.
+- Forgot password → `/admin/auth/callback?next=/admin/reset-password` → set a new password → Today.
+
+**Authentication → Sign In / Providers → Email**: leave **Secure password change** off. The reset page only works
+for 15 minutes after an email link, and the Account page always asks for the current password.
+
+Both links work once, only in the browser that asked for them, and expire. When one has expired, the page says
+"This link has expired — request a new one". The admin also limits sign-in attempts (5 a minute per email and
+device) and emails (3 per address every 15 minutes, 10 per device an hour), on top of Supabase's own limits.
 
 ### If an email link opens the homepage (`/?code=…`) instead of the admin
 1. Check the Redirect URLs above (with `**`) and the email template.
@@ -67,7 +77,8 @@ For yourself now, and for each person you add later under /admin → Users:
 
 1. **Authentication → Users → Add user → Create new user**.
 2. Email (the same one as on the allow-list), a temporary password, tick **Auto Confirm User** → Create.
-3. Give them the temporary password privately. After signing in they set their own under **Account**.
+3. Give them the temporary password privately. After signing in they change it under **Account → Change
+   password**. Anyone who forgets theirs uses **Forgot password?** on the sign-in page.
 
 A login without an allow-list entry cannot open the admin, and an allow-list entry without a login cannot sign in. Both are needed.
 
@@ -91,8 +102,8 @@ Already set (Production + Preview): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 ## 7. Check it works
 
 1. Open `/admin` on the preview → you are sent to the sign-in page.
-2. Sign in with the password from step 4 → the Overview opens.
-3. **Account** → set your own password.
+2. Sign in with the password from step 4 → Today opens.
+3. **Account → Change password** → set your own. Then sign out and try **Forgot password?** once.
 4. Images → open any slot → the prompt is there; uploading works (see `docs/admin-images.md`).
 5. Send a test enquiry from `/contact` → it appears under **Leads** (and in your inbox).
 

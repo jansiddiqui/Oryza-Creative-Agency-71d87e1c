@@ -115,7 +115,7 @@ describe("server-side admin check (every admin action and API)", () => {
       }
     };
     walk(dir);
-    const open = ["login/page.tsx", "auth/callback/route.ts", "auth/signout/route.ts"];
+    const open = ["login/page.tsx", "forgot-password/page.tsx", "auth/callback/route.ts", "auth/signout/route.ts"];
     // Parallel-route placeholders inside (panel) render nothing (the panel layout already checks the admin).
     const empty = ["(panel)/@drawer/[...rest]/page.tsx"];
     for (const f of empty) {
@@ -133,7 +133,7 @@ describe("server-side admin check (every admin action and API)", () => {
 
   it("every admin server action goes through adminAction", () => {
     const dir = join(process.cwd(), "src", "app", "admin");
-    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts", "(panel)/clients/actions.ts", "(panel)/calendar/actions.ts", "(panel)/today/actions.ts", "(panel)/settings/actions.ts", "(panel)/team/actions.ts", "(panel)/shoots/actions.ts", "(panel)/items/actions.ts", "(panel)/approvals/actions.ts", "(panel)/reports/actions.ts", "(panel)/billing/actions.ts"];
+    const actionFiles = ["(panel)/images/actions.ts", "(panel)/leads/actions.ts", "(panel)/users/actions.ts", "(panel)/account/actions.ts", "(panel)/clients/actions.ts", "(panel)/calendar/actions.ts", "(panel)/today/actions.ts", "(panel)/settings/actions.ts", "(panel)/team/actions.ts", "(panel)/shoots/actions.ts", "(panel)/items/actions.ts", "(panel)/approvals/actions.ts", "(panel)/reports/actions.ts", "(panel)/billing/actions.ts", "reset-password/actions.ts"];
     for (const f of actionFiles) {
       const src = readFileSync(join(dir, f), "utf8");
       const exported = src.match(/export async function \w+/g) ?? [];

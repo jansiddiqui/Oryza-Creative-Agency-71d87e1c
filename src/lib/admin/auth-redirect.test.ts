@@ -86,7 +86,7 @@ vi.mock("@/lib/supabase/server", () => ({
   sessionClient: async () => ({ auth: { exchangeCodeForSession: s.exchange, verifyOtp: s.verifyOtp, signOut: s.signOut, signInWithOtp: s.signInWithOtp } }),
 }));
 vi.mock("@/lib/admin/auth", () => ({ lookupAdmin: async () => (s.admin ? { email: "owner@oryza.test", role: "owner" } : null) }));
-vi.mock("@/lib/supabase/admin", () => ({ serviceConfigured: () => true }));
+vi.mock("@/lib/supabase/admin", () => ({ serviceConfigured: () => true, serviceClient: () => ({ rpc: async () => ({ data: true, error: null }) }) }));
 vi.mock("@/lib/supabase/config", () => ({ supabaseConfigured: () => true }));
 vi.mock("next/headers", () => ({ headers: async () => s.headers }));
 
