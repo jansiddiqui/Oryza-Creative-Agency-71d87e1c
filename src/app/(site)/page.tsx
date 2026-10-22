@@ -105,7 +105,8 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="cv-auto bg-ink text-paper">
+      {/* Placeholder size while off screen matches the real one (the phone timeline is taller). */}
+      <section className="cv-auto cv-process bg-ink text-paper">
         <div className="gold-rule" />
         <Container className="py-20">
           <Eyebrow light>How it works</Eyebrow>

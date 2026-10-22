@@ -95,6 +95,14 @@ body {
   content-visibility: auto;
   contain-intrinsic-size: auto 900px;
 }
+/* The home "How it works" section: its off-screen placeholder matches the real height (taller phone timeline). */
+.cv-auto.cv-process { contain-intrinsic-size: auto 1440px; }
+@media (min-width: 768px) {
+  .cv-auto.cv-process { contain-intrinsic-size: auto 730px; }
+}
+
+/* How it works: the flow's connector, gold fading towards the last step. */
+.flow-line { background: linear-gradient(90deg, var(--color-gold-500), color-mix(in srgb, var(--color-gold-500) 35%, transparent)); }
 
 /* ---------- Motion ----------
  * Everything here is opacity/transform only (no layout shift) and is switched off for prefers-reduced-motion.
@@ -130,6 +138,18 @@ body {
   .reveal-armed .grow-y { transform: scaleY(0); }
   .pop { transition: opacity 0.4s ease-out var(--reveal-delay, 0ms), transform 0.4s ease-out var(--reveal-delay, 0ms); transform-box: fill-box; transform-origin: center; }
   .reveal-armed .pop { opacity: 0; transform: scale(0.6); }
+  /* Process flow ("How it works"): the line draws left to right in ~800 ms and the steps light up in turn; on phones
+     each segment of the vertical line grows downwards. Keyframes, not transitions, so it also plays when the section
+     was rendered lazily (content-visibility). Transform/opacity only: no layout shift. */
+  .reveal-armed .flow-line { transform: scaleX(0); }
+  .reveal-armed .flow-seg { transform: scaleY(0); }
+  .reveal-armed .flow-step { opacity: 0; transform: scale(0.6); }
+  [data-revealed] .flow-line { transform-origin: left center; animation: flow-draw-x 0.8s ease-out both; }
+  [data-revealed] .flow-seg { transform-origin: center top; animation: flow-draw-y 0.35s ease-out var(--reveal-delay, 0ms) both; }
+  [data-revealed] .flow-step { animation: flow-light 0.4s ease-out var(--reveal-delay, 0ms) both; }
+  @keyframes flow-draw-x { from { transform: scaleX(0); } to { transform: none; } }
+  @keyframes flow-draw-y { from { transform: scaleY(0); } to { transform: none; } }
+  @keyframes flow-light { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
 
   /* Cards: gentle lift and a gold edge. */
   .card-lift { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
