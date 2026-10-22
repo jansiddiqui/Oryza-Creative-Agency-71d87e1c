@@ -13,7 +13,7 @@ import { accountLinksFor, activeHref, moreFor, navFor, TAB_BAR, titleFor, type N
 import { commandsFor } from "./palette";
 import { QuickAdd } from "./QuickAdd";
 import { ShortcutHelp, ShortcutHost } from "./ShortcutKeys";
-import { ToastProvider } from "./Toasts";
+import { ToastProvider, useToast } from "./Toasts";
 import { ConfirmProvider } from "./Confirm";
 import { useStored } from "../ui/useStored";
 
@@ -247,6 +247,21 @@ function TabBar({ counts, onMore, moreOpen }: { counts: ShellCounts; onMore: () 
   );
 }
 
+/** One-off messages passed in the address after a redirect (e.g. "Password updated" after a reset). */
+const FLASH: Record<string, string> = { "password-updated": "Password updated" };
+function Flash() {
+  const toast = useToast();
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const message = FLASH[url.searchParams.get("flash") ?? ""];
+    if (!message) return;
+    toast.show({ message });
+    url.searchParams.delete("flash");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, [toast]);
+  return null;
+}
+
 /** Pull down at the top of a phone screen to reload its data. */
 function PullToRefresh() {
   const router = useRouter();
@@ -309,6 +324,7 @@ export function Shell({ admin, counts, collapsed: initialCollapsed, children }: 
   return (
     <ToastProvider>
       <ConfirmProvider>
+      <Flash />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[90] focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">Skip to content</a>
       <div className="flex min-h-dvh">
         <Sidebar admin={admin} counts={counts} collapsed={collapsed} onToggle={toggle} />

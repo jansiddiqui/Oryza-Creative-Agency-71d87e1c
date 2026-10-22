@@ -2,51 +2,62 @@
 
 import { useActionState, useState } from "react";
 import { passwordSignIn, sendSignInLink, type LoginState } from "@/app/admin/login/actions";
+import { authButton, authInput, authLink } from "./auth/AuthLayout";
+import { AuthMessage, PasswordField } from "./auth/PasswordField";
 
-const input = "mt-1.5 w-full rounded-xl border border-line bg-paper px-4 py-3 text-[15px] focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-300/40";
+type Mode = "password" | "link";
 
-export function LoginForm({ next, notice, initialMode = "password" }: { next: string; notice?: string; initialMode?: "password" | "link" }) {
-  const [mode, setMode] = useState<"password" | "link">(initialMode);
+/** Password or email-link sign-in. Enter submits; autofill-friendly; 16 px inputs and 48 px buttons on phones. */
+export function LoginForm({ next, notice, noticeTone = "error", initialMode = "password" }: { next: string; notice?: string; noticeTone?: "error" | "ok" | "info"; initialMode?: Mode }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [pwState, pwAction, pwPending] = useActionState<LoginState, FormData>(passwordSignIn, {});
   const [linkState, linkAction, linkPending] = useActionState<LoginState, FormData>(sendSignInLink, {});
   const state = mode === "password" ? pwState : linkState;
+  const pending = pwPending || linkPending;
 
   return (
-    <div className="w-full max-w-sm">
-      <div role="tablist" aria-label="Sign-in method" className="mb-6 grid grid-cols-2 rounded-full border border-line p-1 text-[14px] font-semibold">
+    <div>
+      <div role="tablist" aria-label="Sign-in method" className="mb-5 grid grid-cols-2 rounded-[10px] bg-surface-2 p-1 text-[14px] font-semibold">
         {(["password", "link"] as const).map((m) => (
-          <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`rounded-full py-2 ${mode === m ? "bg-ink text-paper" : "text-ink-soft"}`}>
+          <button key={m} id={`tab-${m}`} type="button" role="tab" aria-selected={mode === m} aria-controls="signin-panel" onClick={() => setMode(m)} className={`min-h-11 rounded-lg ${mode === m ? "bg-surface text-ink shadow-sm" : "text-text-2 hover:text-ink"}`}>
             {m === "password" ? "Password" : "Email link"}
           </button>
         ))}
       </div>
 
-      {notice && <p role="alert" className="mb-4 rounded-xl bg-gold-100/60 px-4 py-3 text-[14px]">{notice}</p>}
+      <div id="signin-panel" role="tabpanel" aria-labelledby={`tab-${mode}`} className="space-y-4">
+        {notice && <AuthMessage tone={noticeTone}>{notice}</AuthMessage>}
 
-      {mode === "link" && linkState.sent ? (
-        <p role="status" className="rounded-xl bg-cream px-4 py-4 text-[15px]">
-          If this email has admin access, a sign-in link is on its way. It works once and expires within an hour.
-        </p>
-      ) : (
-        <form action={mode === "password" ? pwAction : linkAction} className="space-y-4">
-          <input type="hidden" name="next" value={next} />
-          <label className="block text-[14px] font-semibold">
-            Email
-            <input name="email" type="email" required autoComplete="email" className={input} />
-          </label>
-          {mode === "password" && (
-            <label className="block text-[14px] font-semibold">
-              Password
-              <input name="password" type="password" required autoComplete="current-password" className={input} />
-            </label>
-          )}
-          {state.error && <p role="alert" className="rounded-xl border border-red-800/30 bg-red-50 px-4 py-3 text-[14px] text-red-900">{state.error}</p>}
-          <button disabled={pwPending || linkPending} className="w-full rounded-full bg-ink py-3 text-[15px] font-semibold text-paper disabled:opacity-60">
-            {mode === "password" ? (pwPending ? "Signing in…" : "Sign in") : linkPending ? "Sending…" : "Email me a sign-in link"}
-          </button>
-        </form>
-      )}
-      <p className="mt-6 text-[13px] text-muted">Only Oryza team members can sign in. Forgot your password? Use “Email link”, then set a new one under Account.</p>
+        {mode === "link" && linkState.sent ? (
+          <AuthMessage tone="ok">If this email has admin access, a sign-in link is on its way. It works once, in this browser, and expires within an hour.</AuthMessage>
+        ) : (
+          <form action={mode === "password" ? pwAction : linkAction} className="space-y-4" noValidate={false}>
+            <input type="hidden" name="next" value={next} />
+            <div>
+              <label htmlFor="signin-email" className="block text-[14px] font-semibold text-ink">Email</label>
+              <input id="signin-email" name="email" type="email" inputMode="email" required autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={authInput} />
+            </div>
+            {mode === "password" && (
+              <>
+                <PasswordField label="Password" name="password" autoComplete="current-password" />
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-[14px] text-ink">
+                    <input type="checkbox" name="remember" defaultChecked className="size-5 accent-ink" />
+                    Remember me
+                  </label>
+                  {/* A plain link on purpose: next/link here would pull router code into a chunk public pages share (they must stay byte-identical). */}
+                  {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                  <a href="/admin/forgot-password" className={`flex min-h-11 items-center text-[14px] ${authLink}`}>Forgot password?</a>
+                </div>
+              </>
+            )}
+            {state.error && <AuthMessage tone="error">{state.error}</AuthMessage>}
+            <button type="submit" disabled={pending} className={authButton}>
+              {mode === "password" ? (pwPending ? "Signing in…" : "Sign in") : linkPending ? "Sending…" : "Email me a sign-in link"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

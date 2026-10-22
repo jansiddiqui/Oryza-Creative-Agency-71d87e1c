@@ -1,13 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { forwardToCallback } from "@/lib/admin/auth-redirect";
+import { REMEMBER_COOKIE, sessionCookieOptions } from "@/lib/supabase/remember";
 
 /**
  * Runs only for /admin. Refreshes the Supabase session cookie, sends visitors without a session to the login
  * page, and marks every admin response noindex. This is the first gate only: every admin page, server
  * action and route handler checks the admin allow-list again on the server (lib/admin/auth).
  */
-export const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/auth/"];
+export const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/forgot-password", "/admin/auth/"];
 
 export const isPublicAdminPath = (path: string) => PUBLIC_ADMIN_PATHS.some((p) => (p.endsWith("/") ? path.startsWith(p) : path === p));
 
@@ -25,6 +26,7 @@ export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let signedIn = false;
+  const temporary = request.cookies.get(REMEMBER_COOKIE)?.value === "0";
 
   if (url && key) {
     const supabase = createServerClient(url, key, {
@@ -33,7 +35,7 @@ export async function proxy(request: NextRequest) {
         setAll: (list) => {
           for (const { name, value } of list) request.cookies.set(name, value);
           response = NextResponse.next({ request });
-          for (const { name, value, options } of list) response.cookies.set(name, value, options);
+          for (const { name, value, options } of list) response.cookies.set(name, value, sessionCookieOptions(options, temporary));
         },
       },
     });
