@@ -75,6 +75,9 @@
     background-color: var(--color-surface);
   }
   .admin-root :is(input, textarea)::placeholder { color: var(--color-placeholder); }
+  /* Command palette: the whole header row is the field, so the input itself has no border or outline;
+     focus shows as a ring on the palette (see CommandPalette). */
+  .admin-root .palette-input { border: 0 !important; background-color: transparent !important; outline: none !important; box-shadow: none !important; }
   .admin-root :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--color-ink); width: 18px; height: 18px; }
   /* Phones: 16px text in fields so iOS never zooms the page on focus. */
   @media (max-width: 767px) {

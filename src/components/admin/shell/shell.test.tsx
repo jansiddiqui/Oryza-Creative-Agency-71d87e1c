@@ -96,8 +96,8 @@ describe("mobile tab bar", () => {
 describe("command palette", () => {
   it("offers navigation and actions for the role", () => {
     const owner = commandsFor("owner").map((c) => c.label);
-    expect(owner).toEqual(expect.arrayContaining(["Today", "Payments", "New client", "Send for approval…", "Keyboard shortcuts"]));
-    expect(commandsFor("editor").map((c) => c.label)).not.toContain("Payments");
+    expect(owner).toEqual(expect.arrayContaining(["Go to Today", "Go to Payments", "New client", "Send for approval", "Keyboard shortcuts"]));
+    expect(commandsFor("editor").map((c) => c.label)).not.toContain("Go to Payments");
   });
 
   it("scores exact, prefix, word and fuzzy matches in that order", () => {
@@ -113,7 +113,7 @@ describe("command palette", () => {
     const entries = [...commandsFor("owner"), { id: "c:1", group: "Clients" as const, label: "Sample Clinic", href: "/admin/clients/1", icon: "clients" as const }];
     expect(rank(entries, "").some((e) => e.group === "Clients")).toBe(false);
     expect(rank(entries, "clinic")[0].label).toBe("Sample Clinic");
-    expect(rank(entries, "lea")[0].label).toBe("Leads");
+    expect(rank(entries, "lea")[0].label).toBe("Go to Leads");
     expect(rank(entries, "", 3)).toHaveLength(3);
   });
 });

@@ -350,7 +350,7 @@ export function Shell({ admin, counts, collapsed: initialCollapsed, children }: 
         <p className="mt-2 text-[13px] text-muted">{admin.email} · <span className="capitalize">{admin.role}</span></p>
       </Drawer>
       {quick && <QuickAdd open onClose={() => setQuick(false)} />}
-      {palette && <CommandPalette open onClose={() => setPalette(false)} commands={commandsFor(admin.role)} onHelp={openHelp} />}
+      {palette && <CommandPalette open onClose={() => setPalette(false)} commands={commandsFor(admin.role)} onHelp={openHelp} user={admin.email} />}
       <ShortcutHelp open={help} onClose={() => setHelp(false)} />
       <ShortcutHost onPalette={openPalette} onHelp={openHelp} />
       <PullToRefresh />
